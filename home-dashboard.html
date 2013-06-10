@@ -6,10 +6,13 @@
 				this.innerText = formatDate(parseInt(value.getAttribute('data-time')));
 			});
 		}
+		function say(msg) {
+			$.say(msg);
+		}
 		$(function () {
 			window.setInterval(redisplayDiffTimes, 2000);
 		});
-	</script>
+  </script>
 </head>
 
 <body>
@@ -77,7 +80,7 @@
 				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
 			</span>
 		</div>
-		{{msg}}
+		<span class="sent-message">{{say msg}}</span>
 	</div>
 </li>
 </template>

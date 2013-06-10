@@ -56,6 +56,10 @@ if Meteor.isClient
       else
         throw new Error "no author image"
 
+    say: (msg) ->
+      say(msg)
+      msg
+
 
   Template['weather-report'].weather = ->
     WeatherReports.findOne {}, {sort: {local_epoch: -1}}
