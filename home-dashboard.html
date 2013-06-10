@@ -46,16 +46,19 @@
 </template>
 
 <template name="message">
-<li class="message">
-	<div class="header">
-		<span class="author">
-			<strong>{{author.profile.name}}</strong>
-		</span>
-		<span class="time muted pull-right">
-			<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
-		</span>
+<li class="message media">
+	<div class="pull-left">
+		<img class="img-circle" src="{{getAuthorImage author}}" />
 	</div>
-	<div class="text">
+	<div class="media-body">
+		<div class="media-heading">
+			<span class="author">
+				<strong>{{author.profile.name}}</strong>
+			</span>
+			<span class="time muted pull-right">
+				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
+			</span>
+		</div>
 		{{msg}}
 	</div>
 </li>

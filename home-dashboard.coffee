@@ -47,6 +47,16 @@ if Meteor.isClient
     'date-render': (timestamp) ->
       formatDate(timestamp)
 
+  Template.message.helpers
+    getAuthorImage: (author) ->
+      if author.services.twitter
+        return author.services.twitter.profile_image_url
+      else if author.services.google
+        return author.services.google.picture
+      else
+        throw new Error "no author image"
+
+
   Template.message.foo = ->
     "Message: "
 
