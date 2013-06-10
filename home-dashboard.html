@@ -6,9 +6,6 @@
 				this.innerText = formatDate(parseInt(value.getAttribute('data-time')));
 			});
 		}
-		function say(msg) {
-			$.say(msg);
-		}
 		$(function () {
 			window.setInterval(redisplayDiffTimes, 2000);
 		});
@@ -59,7 +56,7 @@
 <template name="send-message">
 {{#if currentUser}}
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
-		<input type="text" name="new-message"></input>
+		<input type="text" style="width:50%" name="new-message"></input>
 		<input class="btn btn-primary" type="button" name="send" value="Send"></input>
 		<input class="btn pull-right" type="button" name="deleteAll" value="Delete"></input>
 	</form>

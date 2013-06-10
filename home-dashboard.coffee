@@ -57,7 +57,7 @@ if Meteor.isClient
         throw new Error "no author image"
 
     say: (msg) ->
-      say(msg)
+      $.say msg
       msg
 
 
@@ -67,24 +67,31 @@ if Meteor.isClient
   Template.messages.messages = ->
     Messages.find {}, {sort: {timestamp: -1}}
 
+  captureAndSendMessage = ->
+    msg = $('input[name="new-message"]').val()
+    $('input[name="new-message"]').val('')
+    if msg
+      log 'info', msg
+      message =
+        msg: msg
+        timestamp: Date.now()
+        author: Meteor.user()
+      Messages.insert message, (obj, _id) ->
+        if typeof obj is 'undefined'
+          log 'info', "message logged '#{_id}'"
+        else
+          log 'warning', 'error inserting a new message'
   Template['send-message'].events
     'click input[name=deleteAll]' : ->
       Messages.find().forEach (message) ->
         Messages.remove message._id
+    'keypress input[name="new-message"]': (event) ->
+      if event.which is 13
+        captureAndSendMessage()
+        return false
+      return
     'click input[name=send]' : ->
-      msg = $('input[name="new-message"]').val()
-      $('input[name="new-message"]').val('')
-      if msg
-        log 'info', msg
-        message =
-          msg: msg
-          timestamp: Date.now()
-          author: Meteor.user()
-        Messages.insert message, (obj, _id) ->
-          if typeof obj is 'undefined'
-            log 'info', "message logged '#{_id}'"
-          else
-            log 'warning', 'error inserting a new message'
+      captureAndSendMessage()
       
 
 if Meteor.isServer
