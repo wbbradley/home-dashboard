@@ -5,6 +5,10 @@ log = (level, msg) ->
 Messages = new Meteor.Collection 'messages'
 
 if Meteor.isClient
+  dumpColl = (coll) ->
+    coll.find().forEach (item) ->
+      console.log item
+
   append_time_unit = (diff, unit_name, unit, ret) ->
     if diff > unit
       units = Math.floor diff / unit
@@ -74,3 +78,4 @@ if Meteor.isServer
     # code to run on server at startup
 @Messages = Messages
 @formatDate = formatDate
+@dumpColl = dumpColl
