@@ -3,6 +3,7 @@ log = (level, msg) ->
     console.log "home-dashboard : #{level} : #{msg}"
 
 Messages = new Meteor.Collection 'messages'
+WeatherReports = new Meteor.Collection 'weather_reports'
 
 if Meteor.isClient
   dumpColl = (coll) ->
@@ -13,10 +14,9 @@ if Meteor.isClient
     if diff > unit
       units = Math.floor diff / unit
       diff -= units * unit
-      if units is 1
-        ret += "#{unit} #{unit_name}"
-      else
-        ret += "#{units} #{unit_name}s"
+      ret += "#{units} #{unit_name}"
+      if units isnt 1
+        ret += 's'
     if diff > 0 and units > 0
       ret += ', '
     else if units > 0
@@ -57,8 +57,8 @@ if Meteor.isClient
         throw new Error "no author image"
 
 
-  Template.message.foo = ->
-    "Message: "
+  Template['weather-report'].weather = ->
+    WeatherReports.findOne {}, {sort: {timestamp: -1}}
 
   Template.messages.messages = ->
     Messages.find {}, {sort: {timestamp: -1}}
@@ -84,8 +84,17 @@ if Meteor.isClient
       
 
 if Meteor.isServer
+  collectWeatherReport = ->
+    weather_api_url = 'http://www.ncdc.noaa.gov/cdo-services/services?token=gTwlQreIsIYRHIechwOYpCeuNslHKQmd'
+    Meteor.http.get weather_api_url, (error, result) ->
+      console.log 'error is '
+      console.log error
+      console.log 'result is '
+      console.log result
   Meteor.startup ->
+    console.log 'Starting Fort Borilliam'
     # code to run on server at startup
+    #  Meteor.setInterval collectWeatherReport, 30000
 @Messages = Messages
 @formatDate = formatDate
 @dumpColl = dumpColl
