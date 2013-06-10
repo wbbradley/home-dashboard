@@ -50,7 +50,7 @@ if Meteor.isClient
   Template.message.helpers
     getAuthorImage: (author) ->
       if author.services.twitter
-        return author.services.twitter.profile_image_url
+        return author.services.twitter.profile_image_url.replace('_normal', '')
       else if author.services.google
         return author.services.google.picture
       else
