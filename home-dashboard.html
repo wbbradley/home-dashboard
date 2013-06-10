@@ -1,5 +1,15 @@
 <head>
 	<title>Fort Borilliam</title>
+	<script>
+		function redisplayDiffTimes() {
+			$('span[data-time]').each(function (index, value) {
+				this.innerText = formatDate(parseInt(value.getAttribute('data-time')));
+			});
+		}
+		$(function () {
+			window.setInterval(redisplayDiffTimes, 2000);
+		});
+	</script>
 </head>
 
 <body>
@@ -34,5 +44,7 @@
 </template>
 
 <template name="message">
-<li>({{date-render timestamp}}) - {{author.profile.name}} - {{msg}}</li>
+	<li>
+		<em><span data-time="{{timestamp}}">{{date-render timestamp}}</span></em> [{{author.profile.name}}] {{msg}}
+	</li>
 </template>
