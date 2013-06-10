@@ -58,12 +58,12 @@ if Meteor.isClient
 
 
   Template['weather-report'].weather = ->
-    WeatherReports.findOne {}, {sort: {timestamp: -1}}
+    WeatherReports.findOne {}, {sort: {local_epoch: -1}}
 
   Template.messages.messages = ->
     Messages.find {}, {sort: {timestamp: -1}}
 
-  Template.messages.events
+  Template['send-message'].events
     'click input[name=deleteAll]' : ->
       Messages.find().forEach (message) ->
         Messages.remove message._id
@@ -85,16 +85,18 @@ if Meteor.isClient
 
 if Meteor.isServer
   collectWeatherReport = ->
-    weather_api_url = 'http://www.ncdc.noaa.gov/cdo-services/services?token=gTwlQreIsIYRHIechwOYpCeuNslHKQmd'
+    # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
+    weather_api_url = 'http://api.wunderground.com/api/8389a57897d1480d/conditions/q/CA/San_Francisco.json'
     Meteor.http.get weather_api_url, (error, result) ->
-      console.log 'error is '
-      console.log error
-      console.log 'result is '
-      console.log result
+      WeatherReports.insert result.data.current_observation, (obj, _id) ->
+          console.log 'info', 'collected weather data'
+
   Meteor.startup ->
     console.log 'Starting Fort Borilliam'
-    # code to run on server at startup
-    #  Meteor.setInterval collectWeatherReport, 30000
+    # do collectWeatherReport
+    # Meteor.setInterval collectWeatherReport, 60000
+
 @Messages = Messages
+@WeatherReports = WeatherReports
 @formatDate = formatDate
 @dumpColl = dumpColl

@@ -15,23 +15,30 @@
 <body>
 	<div class="container">
 		<div class="row-fluid">
-			<div class="messages span6">
+			<div class="span4">
 				<h1>Fort Borilliam</h1>
-				{{loginButtons}}
-			{{#if currentUser}}
-				{{> send-message}}
-			{{/if}}
-				{{> messages}}
 			</div>
-			<div class="weather span6">
+			<div class="span4">
 				{{> weather-report}}
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span8">
+				{{> send-message}}
+				{{> messages}}
 			</div>
 		</div>
 	</div>
 </body>
 
 <template name="weather-report">
-	{{weather}}
+{{#with weather}}
+<div style="align:right;padding: 2em 0 0 0;" class="pull-right">
+	{{weather.weather}} / {{feelslike_string}}
+	<br/>
+	{{loginButtons}}
+</div>
+{{/with}}
 </template>
 
 <template name="messages">
@@ -47,11 +54,13 @@
 </template>
 
 <template name="send-message">
+{{#if currentUser}}
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" name="new-message"></input>
 		<input class="btn" type="button" name="send" value="Send"></input>
 		<input class="btn pull-right" type="button" name="deleteAll" value="Delete"></input>
 	</form>
+{{/if}}
 </template>
 
 <template name="message">
