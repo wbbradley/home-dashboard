@@ -1,7 +1,5 @@
 <head>
 	<title>Fort Borilliam</title>
-	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
-	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -12,17 +10,23 @@
 </body>
 
 <template name="messages">
+{{#if messages}}
+<ul>
 	{{#each messages}}
 		{{> message}}
-	{{else}}
-		No messages.
 	{{/each}}
-	<form class="form-horizontal">
+</ul>
+{{else}}
+	No messages.
+{{/if}}
+	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" name="new-message"></input>
 		<input class="btn" type="button" name="send" value="Send"></input>
+		<br/>
+		<input class="btn" type="button" name="deleteAll" value="Delete"></input>
 	</form>
 </template>
 
 <template name="message">
-	{{foo}} {{msg}}
+<li>{{msg}}</li>
 </template>
