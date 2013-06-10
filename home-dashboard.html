@@ -20,6 +20,12 @@
 {{else}}
 	No messages.
 {{/if}}
+{{#if currentUser}}
+	{{> send-message}}
+{{/if}}
+</template>
+
+<template name="send-message">
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" name="new-message"></input>
 		<input class="btn" type="button" name="send" value="Send"></input>
@@ -28,5 +34,5 @@
 </template>
 
 <template name="message">
-<li>({{date-render timestamp}}) {{msg}}</li>
+<li>({{date-render timestamp}}) - {{author.profile.name}} - {{msg}}</li>
 </template>

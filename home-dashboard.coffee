@@ -32,6 +32,7 @@ if Meteor.isClient
         message =
           msg: msg
           timestamp: Date.now()
+          author: Meteor.user()
         Messages.insert message, (obj, _id) ->
           if typeof obj is 'undefined'
             log 'info', "message logged '#{_id}'"
