@@ -1,13 +1,15 @@
-if Meteor.isClient
-  Template.hello.greeting = ->
-    "Welcome to Fort Borilliam."
+log = (level, msg) ->
+  if typeof console != 'undefined'
+    console.log "home-dashboard : #{level} : #{msg}"
 
-  Template.hello.events
-    'click input' : ->
-      # template data, if any, is available in 'this'
-      if typeof console != 'undefined'
-        console.log "You pressed the button"
-  
+if Meteor.isClient
+  Template.message.foo = ->
+    "Message: "
+
+  Template.messages.events
+    'click input[name=send]' : ->
+      log 'info', $('input[name="new-message"]').val()
+      
 
 if Meteor.isServer
   Meteor.startup ->

@@ -1,13 +1,28 @@
 <head>
-  <title>home-dashboard-2</title>
+	<title>Fort Borilliam</title>
+	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-  {{> hello}}
+	<h1>Fort Borilliam</h1>
+	<div class="messages">
+		{{> messages}}
+	</div>
 </body>
 
-<template name="hello">
-  <h1>Hello World!</h1>
-  {{greeting}}
-  <input type="button" value="Click" />
+<template name="messages">
+	{{#each messages}}
+		{{> message}}
+	{{else}}
+		No messages.
+	{{/each}}
+	<form class="form-horizontal">
+		<input type="text" name="new-message"></input>
+		<input class="btn" type="button" name="send" value="Send"></input>
+	</form>
+</template>
+
+<template name="message">
+	{{foo}} {{msg}}
 </template>
