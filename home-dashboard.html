@@ -13,17 +13,19 @@
 </head>
 
 <body>
-	<div class="row-fluid">
-		<div class="messages span6">
-			<h1>Fort Borilliam</h1>
-			{{loginButtons}}
-		{{#if currentUser}}
-			{{> send-message}}
-		{{/if}}
-			{{> messages}}
-		</div>
-		<div class="weather span6">
-			{{> weather-report}}
+	<div class="container">
+		<div class="row-fluid">
+			<div class="messages span6">
+				<h1>Fort Borilliam</h1>
+				{{loginButtons}}
+			{{#if currentUser}}
+				{{> send-message}}
+			{{/if}}
+				{{> messages}}
+			</div>
+			<div class="weather span6">
+				{{> weather-report}}
+			</div>
 		</div>
 	</div>
 </body>
