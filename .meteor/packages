@@ -10,3 +10,6 @@ coffeescript
 jquery
 bootstrap
 check
+accounts-google
+accounts-twitter
+accounts-ui
