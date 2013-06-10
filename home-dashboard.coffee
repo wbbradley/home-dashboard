@@ -93,8 +93,7 @@ if Meteor.isServer
 
   Meteor.startup ->
     console.log 'Starting Fort Borilliam'
-    # do collectWeatherReport
-    # Meteor.setInterval collectWeatherReport, 60000
+    Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
 
 @Messages = Messages
 @WeatherReports = WeatherReports
