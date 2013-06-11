@@ -57,7 +57,8 @@ if Meteor.isClient
         throw new Error "no author image"
 
     say: (msg) ->
-      $.say msg
+      if Session.equals 'tts', true
+        $.say msg
       msg
 
 
