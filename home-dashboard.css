@@ -1,12 +1,6 @@
 /* CSS declarations go here */
-.message {
-	padding: 1em;
-	background-color: #eeeeee;
-	border-radius: 1em;
-	margin-bottom: 0.5em;
-}
 
 .avatar-img {
-	width: 5em;
-	height: 5em;
+	width: 6em;
+	height: 6em;
 }

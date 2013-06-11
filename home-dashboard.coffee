@@ -10,6 +10,10 @@ if Meteor.isClient
     coll.find().forEach (item) ->
       console.log item
 
+  Messages.deleteAll = ->
+    Messages.find().forEach (message) ->
+      Messages.remove message._id
+
   append_time_unit = (diff, unit_name, unit, ret) ->
     if diff > unit
       units = Math.floor diff / unit
@@ -85,9 +89,6 @@ if Meteor.isClient
         else
           log 'warning', 'error inserting a new message'
   Template['send-message'].events
-    'click input[name=deleteAll]' : ->
-      Messages.find().forEach (message) ->
-        Messages.remove message._id
     'keypress input[name="new-message"]': (event) ->
       if event.which is 13
         captureAndSendMessage()

@@ -8,7 +8,7 @@
 			});
 		}
 		$(function () {
-			window.setInterval(redisplayDiffTimes, 2000);
+			window.setInterval(redisplayDiffTimes, 10000);
 		});
 	</script>
 </head>
@@ -64,13 +64,12 @@
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" style="width:50%" name="new-message"></input>
 		<input class="btn btn-primary" type="button" name="send" value="Send"></input>
-		<input class="btn pull-right" type="button" name="deleteAll" value="Delete"></input>
 	</form>
 {{/if}}
 </template>
 
 <template name="message">
-<li class="message media">
+<li class="well media">
 	<div class="pull-left">
 		<img class="img-circle avatar-img" src="{{getAuthorImage author}}" />
 	</div>
