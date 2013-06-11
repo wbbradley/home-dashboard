@@ -6,6 +6,10 @@ Messages = new Meteor.Collection 'messages'
 WeatherReports = new Meteor.Collection 'weather_reports'
 
 if Meteor.isClient
+  # Accounts.ui.config
+  #   requestPermissions:
+  #     facebook: ['rsvp_event']
+
   dumpColl = (coll) ->
     coll.find().forEach (item) ->
       console.log item
