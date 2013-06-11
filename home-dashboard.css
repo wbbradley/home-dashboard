@@ -4,3 +4,15 @@
 	width: 6em;
 	height: 6em;
 }
+
+.well {
+  font-family: Cutive;
+}
+
+.well h1 {
+  font-family: Cutive;
+}
+
+.well img {
+  max-width: 7em;
+}
