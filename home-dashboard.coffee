@@ -53,6 +53,8 @@ if Meteor.isClient
         return author.services.twitter.profile_image_url.replace('_normal', '')
       else if author.services.google
         return author.services.google.picture
+      else if author.services.facebook
+        return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
       else
         throw new Error "no author image"
 
