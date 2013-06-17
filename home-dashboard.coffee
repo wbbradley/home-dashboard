@@ -3,7 +3,9 @@ log = (level, msg) ->
     console.log "home-dashboard : #{level} : #{msg}"
 
 Messages = new Meteor.Collection 'messages'
+
 WeatherReports = new Meteor.Collection 'weather_reports'
+
 
 if Meteor.isClient
   # Accounts.ui.config
@@ -13,10 +15,6 @@ if Meteor.isClient
   dumpColl = (coll) ->
     coll.find().forEach (item) ->
       console.log item
-
-  Messages.deleteAll = ->
-    Messages.find().forEach (message) ->
-      Messages.remove message._id
 
   append_time_unit = (diff, unit_name, unit, ret) ->
     if diff > unit
@@ -110,9 +108,12 @@ if Meteor.isServer
       if result isnt null
         WeatherReports.insert result.data.current_observation, (obj, _id) ->
           console.log 'info', 'collected weather data'
+          WeatherReports.remove _id: $ne: _id
+
 
   Meteor.startup ->
     console.log 'Starting Fort Borilliam'
+    collectWeatherReport()
     Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
 
 @Messages = Messages
