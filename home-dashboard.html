@@ -29,10 +29,8 @@
 		<div class="row-fluid">
 			<div class="span8">
 				<div class="well" style="position:relative">
-					<h1>Fort Borilliam</h1>
-					<div style="position:absolute;top:0;right:0">
-						{{> weather-report}}
-					</div>
+					<div class="pull-left lead">Fort Borilliam</div>
+					{{> weather-report}}
 				</div>
 			</div>
 		</div>
@@ -51,7 +49,7 @@
 </body>
 
 <template name="weather-report">
-<div style="align:right;padding: 2em 0 0 0;" class="pull-right">
+<div style="align:right" class="pull-right">
 {{#with weather}}
 	{{weather.weather}} / {{feelslike_string}}
 {{/with}}
