@@ -107,7 +107,8 @@ if Meteor.isServer
     # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
     weather_api_url = 'http://api.wunderground.com/api/8389a57897d1480d/conditions/q/CA/San_Francisco.json'
     Meteor.http.get weather_api_url, (error, result) ->
-      WeatherReports.insert result.data.current_observation, (obj, _id) ->
+      if result isnt null
+        WeatherReports.insert result.data.current_observation, (obj, _id) ->
           console.log 'info', 'collected weather data'
 
   Meteor.startup ->
