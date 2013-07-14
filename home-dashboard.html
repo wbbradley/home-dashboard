@@ -1,5 +1,5 @@
 <head>
-	<title>Fort Borilliam</title>
+	<title>The Borilliam</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
 	<script>
@@ -85,7 +85,7 @@ You are in the {{roomName}}.<br>
 </template>
 
 <template name="message">
-<li class="well media">
+<li class="feature well media">
 	<div class="pull-left">
 		<img class="img-circle avatar-img hidden-phone" src="{{getAuthorImage author}}" />
 		<img class="img-circle avatar-img visible-phone" src="{{getAuthorImage author}}" />
@@ -100,7 +100,17 @@ You are in the {{roomName}}.<br>
 				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
 			</span>
 		</div>
-		<span class="sent-message">{{say msg}}</span>
+		{{#if msg}}
+			<span class="sent-message">{{say msg}}</span>
+		{{/if}}
+		{{#if imageUrl}}
+		<img src="{{imageUrl}}" />
+		{{/if}}
+		{{#if youtube}}
+		<iframe id="ytplayer" type="text/html" width="400" height="244"
+			src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com"
+			frameborder="0"></iframe>
+		{{/if}}
 	</div>
 </li>
 </template>

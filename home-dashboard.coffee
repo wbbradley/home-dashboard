@@ -107,24 +107,44 @@ if Meteor.isClient
     $('input[name="new-message"]').val('')
     if msg
       log 'info', msg
-      roomIndex = msg.indexOf('/room ')
-      if roomIndex >= 0
-        room =
-          name: msg.substr(roomIndex + 6)
-          timestamp: Date.now()
-        
-        Rooms.insert room, (obj, _id) ->
-          if typeof obj is 'undefined'
-            log 'info', "room logged '#{_id}'"
-          else
-            log 'warning', 'error inserting a new room'
-      else
-        currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
-        if not currentRoom
-          currentRoom =
-            name: 'lobby'
-        roomName = currentRoom.name
 
+      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+      if not currentRoom
+        currentRoom =
+          name: 'lobby'
+      roomName = currentRoom.name
+
+      if msg[0] is '/'
+        roomIndex = msg.indexOf('/room ')
+        if roomIndex >= 0
+          room =
+            name: msg.substr(roomIndex + 6)
+            timestamp: Date.now()
+
+          Rooms.insert room, (obj, _id) ->
+            if typeof obj is 'undefined'
+              log 'info', "room logged '#{_id}'"
+            else
+              log 'warning', 'error inserting a new room'
+        imageIndex = msg.indexOf('/image ')
+        if imageIndex >= 0
+          image =
+            imageUrl: msg.substr(imageIndex + 7)
+            timestamp: Date.now()
+            author: Meteor.user()
+            room: roomName
+
+          Messages.insert image
+        youtubeIndex = msg.indexOf('/youtube ')
+        if youtubeIndex >= 0
+          youtube =
+            youtube: encodeURIComponent(msg.substr(youtubeIndex + 9))
+            timestamp: Date.now()
+            author: Meteor.user()
+            room: roomName
+
+          Messages.insert youtube
+      else
         message =
           msg: msg
           timestamp: Date.now()
