@@ -3,6 +3,7 @@ log = (level, msg) ->
     console.log "home-dashboard : #{level} : #{msg}"
 
 Messages = new Meteor.Collection 'messages'
+Rooms = new Meteor.Collection 'rooms'
 
 WeatherReports = new Meteor.Collection 'weather_reports'
 
@@ -65,31 +66,75 @@ if Meteor.isClient
         throw new Error "no author image"
 
     say: (msg) ->
-      if Session.equals 'tts', true
-        $.say msg
+      $.say msg
       msg
 
 
   Template['weather-report'].weather = ->
     WeatherReports.findOne {}, {sort: {local_epoch: -1}}
 
+  Template.messages.roomName = ->
+    room = Rooms.findOne {}, {sort: {timestamp: -1}}
+    if not room
+      return 'VOID'
+    if room.name is 'lobby'
+      return 'lobby'
+    else
+      return "#{room.name}"
   Template.messages.messages = ->
-    Messages.find {}, {sort: {timestamp: -1}}
+    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+    if not currentRoom
+      currentRoom =
+        name: 'lobby'
+    roomName = currentRoom.name
+    console.log "Looking for messages in #{roomName}"
+    Messages.find {room: roomName}, {sort: {timestamp: -1}}
+
+  Template.room.room = ->
+    Rooms.findOne {}, {sort: {timestamp: -1}}
+
+  Template.room.roomName = ->
+    room = Rooms.findOne {}, {sort: {timestamp: -1}}
+    if not room
+      return 'VOID'
+    if room.name is 'lobby'
+      return 'lobby'
+    else
+      return "#{room.name} room"
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
     $('input[name="new-message"]').val('')
     if msg
       log 'info', msg
-      message =
-        msg: msg
-        timestamp: Date.now()
-        author: Meteor.user()
-      Messages.insert message, (obj, _id) ->
-        if typeof obj is 'undefined'
-          log 'info', "message logged '#{_id}'"
-        else
-          log 'warning', 'error inserting a new message'
+      roomIndex = msg.indexOf('/room ')
+      if roomIndex >= 0
+        room =
+          name: msg.substr(roomIndex + 6)
+          timestamp: Date.now()
+        
+        Rooms.insert room, (obj, _id) ->
+          if typeof obj is 'undefined'
+            log 'info', "room logged '#{_id}'"
+          else
+            log 'warning', 'error inserting a new room'
+      else
+        currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+        if not currentRoom
+          currentRoom =
+            name: 'lobby'
+        roomName = currentRoom.name
+
+        message =
+          msg: msg
+          timestamp: Date.now()
+          author: Meteor.user()
+          room: roomName
+        Messages.insert message, (obj, _id) ->
+          if typeof obj is 'undefined'
+            log 'info', "message logged '#{_id}'"
+          else
+            log 'warning', 'error inserting a new message'
   Template['send-message'].events
     'keypress input[name="new-message"]': (event) ->
       if event.which is 13
@@ -110,12 +155,22 @@ if Meteor.isServer
           console.log 'info', 'collected weather data'
           WeatherReports.remove _id: $ne: _id
 
-
   Meteor.startup ->
     console.log 'Starting Fort Borilliam'
     collectWeatherReport()
     Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
+    lobby = Rooms.findOne {name: 'lobby'}
+    if not lobby
+      lobby =
+        name: 'lobby'
+        timestamp: Date.now()
+      Rooms.insert lobby, (obj, _id) ->
+        if typeof obj is 'undefined'
+          log 'info', "room logged '#{_id}'"
+        else
+          log 'warning', 'error inserting a new room'
 
+@Rooms = Rooms
 @Messages = Messages
 @WeatherReports = WeatherReports
 @formatDate = formatDate
