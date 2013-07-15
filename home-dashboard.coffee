@@ -59,6 +59,9 @@ if Meteor.isClient
     'date-render': (timestamp) ->
       formatDate(timestamp)
 
+  Template.message.author = ->
+      Meteor.users.findOne {_id:@authorId}
+
   Template.message.helpers
     getAuthorImage: (authorId) ->
       author = Meteor.users.findOne {_id:authorId}
@@ -151,7 +154,7 @@ if Meteor.isClient
         Messages.insert
           msg: msg
           timestamp: Date.now()
-          author: Meteor.user()._id
+          authorId: Meteor.user()._id
           roomId: currentRoom._id
 
   Template['send-message'].events
