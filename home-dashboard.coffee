@@ -188,23 +188,6 @@ if Meteor.isServer
         lcname: 'lobby'
         timestamp: Date.now()
 
-    Rooms.find().forEach (room) ->
-      Rooms.update room._id, room, (error, _id) ->
-        Messages.find({room:room.lcname}).forEach (message) ->
-          message.roomId = _id
-          log 'info', "message _id = #{message.roomId}"
-          delete message.room
-          message.authorId = message.author._id
-          delete message.author
-          Messages.update message._id, message
-
-    Messages.find().forEach (message) ->
-      message.authorId = message.author._id
-      if not message.room and message.roomId is null
-        message.roomId = lobbyId
-      Messages.update message._id, message
-
-
 @Rooms = Rooms
 @Messages = Messages
 @WeatherReports = WeatherReports
