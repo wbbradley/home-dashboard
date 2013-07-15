@@ -7,6 +7,11 @@ Rooms = new Meteor.Collection 'rooms'
 
 WeatherReports = new Meteor.Collection 'weather_reports'
 
+findRoom = (name) ->
+  if not name
+    throw new Error 'No name passed to findRoom'
+  room = Rooms.findOne {lcname: (name or '').toLowerCase()}, {sort: {timestamp: -1}}
+  return room
 
 if Meteor.isClient
   # Accounts.ui.config
@@ -55,18 +60,20 @@ if Meteor.isClient
       formatDate(timestamp)
 
   Template.message.helpers
-    getAuthorImage: (author) ->
-      if author.services.twitter
-        return author.services.twitter.profile_image_url.replace('_normal', '')
-      else if author.services.google
-        return author.services.google.picture
-      else if author.services.facebook
-        return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
-      else
-        throw new Error "no author image"
+    getAuthorImage: (authorId) ->
+      author = Meteor.users.findOne {_id:authorId}
+      unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
+      if author
+        if author.services.twitter
+          return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
+        else if author.services.google
+          return author.services.google.picture or unknown
+        else if author.services.facebook
+          return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
+      return unknown
 
     say: (msg) ->
-      $.say msg
+      # $.say msg
       msg
 
 
@@ -81,14 +88,12 @@ if Meteor.isClient
       return 'lobby'
     else
       return "#{room.name}"
+
   Template.messages.messages = ->
     currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
     if not currentRoom
-      currentRoom =
-        name: 'lobby'
-    roomName = currentRoom.name
-    console.log "Looking for messages in #{roomName}"
-    Messages.find {room: roomName}, {sort: {timestamp: -1}}
+      return []
+    Messages.find {roomId: currentRoom._id}, {sort: {timestamp: -1}}
 
   Template.room.room = ->
     Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -97,10 +102,21 @@ if Meteor.isClient
     room = Rooms.findOne {}, {sort: {timestamp: -1}}
     if not room
       return 'VOID'
-    if room.name is 'lobby'
+    if room.lcname is 'lobby'
       return 'lobby'
     else
       return "#{room.name} room"
+
+  @switchToRoom = (roomName) ->
+    room = findRoom roomName
+    if room
+      room.timestamp = Date.now()
+      Rooms.update room._id, room
+    else
+      Rooms.insert
+        name: roomName
+        lcname: roomName.toLowerCase()
+        timestamp: Date.now()
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -109,52 +125,35 @@ if Meteor.isClient
       log 'info', msg
 
       currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
-      if not currentRoom
-        currentRoom =
-          name: 'lobby'
-      roomName = currentRoom.name
 
       if msg[0] is '/'
         roomIndex = msg.indexOf('/room ')
         if roomIndex >= 0
-          room =
-            name: msg.substr(roomIndex + 6)
-            timestamp: Date.now()
+          roomName = msg.substr(roomIndex + 6)
+          switchToRoom roomName
 
-          Rooms.insert room, (obj, _id) ->
-            if typeof obj is 'undefined'
-              log 'info', "room logged '#{_id}'"
-            else
-              log 'warning', 'error inserting a new room'
         imageIndex = msg.indexOf('/image ')
         if imageIndex >= 0
-          image =
+          Messages.insert
             imageUrl: msg.substr(imageIndex + 7)
             timestamp: Date.now()
-            author: Meteor.user()
-            room: roomName
+            authorId: Meteor.user()._id
+            roomId: currentRoom._id
 
-          Messages.insert image
         youtubeIndex = msg.indexOf('/youtube ')
         if youtubeIndex >= 0
-          youtube =
+          Messages.insert
             youtube: encodeURIComponent(msg.substr(youtubeIndex + 9))
             timestamp: Date.now()
-            author: Meteor.user()
-            room: roomName
-
-          Messages.insert youtube
+            authorId: Meteor.user()._id
+            roomId: currentRoom._id
       else
-        message =
+        Messages.insert
           msg: msg
           timestamp: Date.now()
-          author: Meteor.user()
-          room: roomName
-        Messages.insert message, (obj, _id) ->
-          if typeof obj is 'undefined'
-            log 'info', "message logged '#{_id}'"
-          else
-            log 'warning', 'error inserting a new message'
+          author: Meteor.user()._id
+          roomId: currentRoom._id
+
   Template['send-message'].events
     'keypress input[name="new-message"]': (event) ->
       if event.which is 13
@@ -172,23 +171,39 @@ if Meteor.isServer
     Meteor.http.get weather_api_url, (error, result) ->
       if result isnt null
         WeatherReports.insert result.data.current_observation, (obj, _id) ->
-          console.log 'info', 'collected weather data'
+          log 'info', 'collected weather data'
           WeatherReports.remove _id: $ne: _id
 
   Meteor.startup ->
     console.log 'Starting Fort Borilliam'
     collectWeatherReport()
     Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
-    lobby = Rooms.findOne {name: 'lobby'}
-    if not lobby
-      lobby =
+
+    lobby = findRoom 'lobby'
+    if lobby
+      lobbyId = lobby._id
+    else
+      lobbyId = Rooms.insert
         name: 'lobby'
+        lcname: 'lobby'
         timestamp: Date.now()
-      Rooms.insert lobby, (obj, _id) ->
-        if typeof obj is 'undefined'
-          log 'info', "room logged '#{_id}'"
-        else
-          log 'warning', 'error inserting a new room'
+
+    Rooms.find().forEach (room) ->
+      Rooms.update room._id, room, (error, _id) ->
+        Messages.find({room:room.lcname}).forEach (message) ->
+          message.roomId = _id
+          log 'info', "message _id = #{message.roomId}"
+          delete message.room
+          message.authorId = message.author._id
+          delete message.author
+          Messages.update message._id, message
+
+    Messages.find().forEach (message) ->
+      message.authorId = message.author._id
+      if not message.room and message.roomId is null
+        message.roomId = lobbyId
+      Messages.update message._id, message
+
 
 @Rooms = Rooms
 @Messages = Messages

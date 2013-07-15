@@ -60,7 +60,7 @@
 </template>
 
 <template name="room">
-You are in the {{roomName}}.<br>
+We are in the {{roomName}}.<br>
 </template>
 
 <template name="messages">
@@ -87,8 +87,8 @@ You are in the {{roomName}}.<br>
 <template name="message">
 <li class="feature well media">
 	<div class="pull-left">
-		<img class="img-circle avatar-img hidden-phone" src="{{getAuthorImage author}}" />
-		<img class="img-circle avatar-img visible-phone" src="{{getAuthorImage author}}" />
+		<img class="img-circle avatar-img hidden-phone" src="{{getAuthorImage authorId}}" />
+		<img class="img-circle avatar-img visible-phone" src="{{getAuthorImage authorId}}" />
 	</div>
 	<div class="media-body">
 		<div class="media-heading">
