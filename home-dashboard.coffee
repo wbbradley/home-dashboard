@@ -62,7 +62,18 @@ if Meteor.isClient
   Template.message.author = ->
       Meteor.users.findOne {_id:@authorId}
 
+  Template.message.events
+    'click .delete-btn': () ->
+      Messages.update {_id: @_id},
+        $set: {deleted: true}
+
   Template.message.helpers
+    ifOwner: (context, options) ->
+      if Meteor.user()._id is @authorId
+        return options.fn @
+      else
+        return options.inverse @
+
     getAuthorImage: (authorId) ->
       author = Meteor.users.findOne {_id:authorId}
       unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
@@ -96,7 +107,7 @@ if Meteor.isClient
     currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
     if not currentRoom
       return []
-    Messages.find {roomId: currentRoom._id}, {sort: {timestamp: -1}}
+    Messages.find {roomId: currentRoom._id, deleted: null}, {sort: {timestamp: -1}}
 
   Template.room.room = ->
     Rooms.findOne {}, {sort: {timestamp: -1}}

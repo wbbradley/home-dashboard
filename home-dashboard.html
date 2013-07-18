@@ -104,13 +104,20 @@ We are in the {{roomName}}.<br>
 			<span class="sent-message">{{say msg}}</span>
 		{{/if}}
 		{{#if imageUrl}}
-		<img src="{{imageUrl}}" />
+			<img src="{{imageUrl}}" />
 		{{/if}}
 		{{#if youtube}}
 		<iframe id="ytplayer" type="text/html" width="400" height="244"
 			src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com"
 			frameborder="0"></iframe>
 		{{/if}}
+		{{#ifOwner this}}
+			<div class="delete-btn">
+				<button class="btn btn-danger btn-small">
+					<i class="icon-white icon-remove"></i>
+				</button>
+			</div>
+		{{/ifOwner}}
 	</div>
 </li>
 </template>
