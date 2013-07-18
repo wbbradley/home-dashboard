@@ -53,3 +53,10 @@ body, html {
 	z-index: 1;
 }
 
+/* Workaround padding issue on iPhone */
+@media (max-width: 767px) {
+	body {
+		padding-right: 0;
+		padding-left: 0;
+	}
+}
