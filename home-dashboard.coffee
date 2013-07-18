@@ -66,11 +66,36 @@ if Meteor.isClient
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
+    'click .love-btn': () ->
+      if Meteor.user()?._id?
+        log 'info', "#{Meteor.user().profile.name} liked a post"
+        Messages.update {_id: @_id},
+          $addToSet: {userLoveIds: Meteor.user()._id}
 
   Template.message.helpers
+    ifNotLoved: (context, options) ->
+      console.log "context"
+      console.log context
+      console.log "options"
+      console.log options
+      userLoveIds = @['userLoveIds'] or []
+      if userLoveIds.indexOf(Meteor.user()._id) is -1
+        return options.fn @
+      else
+        return options.inverse @
     ifOwner: (context, options) ->
       if Meteor.user()._id is @authorId
         return options.fn @
+      else
+        return options.inverse @
+    loveLoop: (context, options) ->
+      count = @userLoveIds?.length or 0
+      if count
+        ret = "";
+        while count > 0
+          ret += options.fn @
+          --count
+        return ret
       else
         return options.inverse @
 

@@ -2,6 +2,7 @@
 	<title>The Borilliam</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 	<script>
 		function redisplayDiffTimes() {
 			$('span[data-time]').each(function (index, value) {
@@ -87,14 +88,12 @@ We are in the {{roomName}}.<br>
 <template name="message">
 <li class="feature well media">
 	<div class="pull-left">
-		<img class="img-circle avatar-img hidden-phone" src="{{getAuthorImage authorId}}" />
-		<img class="img-circle avatar-img visible-phone" src="{{getAuthorImage authorId}}" />
+		<img class="avatar-img hidden-phone" src="{{getAuthorImage authorId}}" />
+		<img class="avatar-img visible-phone" src="{{getAuthorImage authorId}}" />
 	</div>
 	<div class="media-body">
 		<div class="media-heading">
-			<span class="author">
-				<strong>{{author.profile.name}}</strong>
-			</span>
+			<span class="author">{{author.profile.name}}</span>
 			<br>
 			<span class="time muted">
 				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
@@ -111,13 +110,23 @@ We are in the {{roomName}}.<br>
 			src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com"
 			frameborder="0"></iframe>
 		{{/if}}
-		{{#ifOwner this}}
-			<div class="delete-btn">
-				<button class="btn btn-danger btn-small">
+		<div class="tools">
+			{{#ifNotLoved this}}
+				<button class="love-btn btn btn-small btn-danger">
+					<i class="icon-white icon-heart"></i>
+				</button>
+			{{/ifNotLoved}}
+			{{#ifOwner this}}
+				<button class="btn btn-warning love-btn btn-small">
 					<i class="icon-white icon-remove"></i>
 				</button>
-			</div>
-		{{/ifOwner}}
+			{{/ifOwner}}
+		</div>
+		<div>
+			{{#loveLoop this}}
+				<i class="icon-heart"></i>
+			{{/loveLoop}}
+		</div>
 	</div>
 </li>
 </template>
