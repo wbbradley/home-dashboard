@@ -4,14 +4,48 @@ log = (level, msg) ->
 
 Messages = new Meteor.Collection 'messages'
 Rooms = new Meteor.Collection 'rooms'
-
+Items = new Meteor.Collection 'items'
 WeatherReports = new Meteor.Collection 'weather_reports'
+Globals = new Meteor.Collection 'globals'
 
-findRoom = (name) ->
+@getGlobal = (name, _default) ->
+  _default or= null
+  global = Globals.findOne {name: name}
+  if global
+    return global.value
+  else
+    Globals.insert
+      name: name
+      value: _default
+      timestamp: Date.now()
+    return _default
+
+@setGlobal = (name, value) ->
+  global = Globals.findOne {name: name}
+  if global
+    Globals.update {_id: global._id},
+      $set:
+        value: value
+        timestamp: Date.now()
+    return
+  else
+    Globals.insert
+      name: name
+      value: value
+      timestamp: Date.now()
+    return
+  
+
+findThing = (things, name) ->
   if not name
     throw new Error 'No name passed to findRoom'
-  room = Rooms.findOne {lcname: (name or '').toLowerCase()}, {sort: {timestamp: -1}}
-  return room
+  thing = things.findOne {lcname: (name or '').toLowerCase()}, {sort: {timestamp: -1}}
+  return thing
+
+findRoom = (name) ->
+  findThing Rooms, name
+findItem = (name) ->
+  findThing Items, name
 
 if Meteor.isClient
   # Accounts.ui.config
@@ -55,6 +89,18 @@ if Meteor.isClient
       ret = 'just now'
     ret
 
+  Template['user-item'].helpers
+    ifMine: (context, options) ->
+      if Meteor.user()?._id is @holderId
+        return options.fn @
+      else
+        return options.inverse @
+
+  Template['user-items'].helpers
+    items: ->
+      console.log "Fetching items for user #{@_id}"
+      Items.find {holderId: @_id}, {sort: {timestamp: -1}}
+
   Template.message.helpers
     'date-render': (timestamp) ->
       formatDate(timestamp)
@@ -72,19 +118,27 @@ if Meteor.isClient
         Messages.update {_id: @_id},
           $addToSet: {userLoveIds: Meteor.user()._id}
 
+  @getUserImage  = (authorId) ->
+    author = Meteor.users.findOne {_id:authorId}
+    unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
+    if author
+      if author.services.twitter
+        return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
+      else if author.services.google
+        return author.services.google.picture or unknown
+      else if author.services.facebook
+        return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
+    return unknown
+
   Template.message.helpers
     ifNotLoved: (context, options) ->
-      console.log "context"
-      console.log context
-      console.log "options"
-      console.log options
       userLoveIds = @['userLoveIds'] or []
       if userLoveIds.indexOf(Meteor.user()._id) is -1
         return options.fn @
       else
         return options.inverse @
     ifOwner: (context, options) ->
-      if Meteor.user()._id is @authorId
+      if Meteor.user()?._id is @authorId
         return options.fn @
       else
         return options.inverse @
@@ -100,16 +154,7 @@ if Meteor.isClient
         return options.inverse @
 
     getAuthorImage: (authorId) ->
-      author = Meteor.users.findOne {_id:authorId}
-      unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
-      if author
-        if author.services.twitter
-          return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
-        else if author.services.google
-          return author.services.google.picture or unknown
-        else if author.services.facebook
-          return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
-      return unknown
+      getUserImage authorId
 
     say: (msg) ->
       # $.say msg
@@ -118,6 +163,25 @@ if Meteor.isClient
 
   Template['weather-report'].weather = ->
     WeatherReports.findOne {}, {sort: {local_epoch: -1}}
+
+  Template.messages.helpers
+    eachItem: (context, options) ->
+      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+      if not currentRoom?._id?
+        return options.inverse @
+      items = Items.find {roomId: currentRoom._id}, {sort: {timestamp: 1}}
+
+      if items.count()
+        ret = "Items in this room: ["
+        sep = ""
+        items.forEach (item) ->
+          ret += sep
+          ret += options.fn item
+          sep = " | "
+        ret += ']'
+      else
+        ret = options.inverse @
+      return ret
 
   Template.messages.roomName = ->
     room = Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -132,7 +196,35 @@ if Meteor.isClient
     currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
     if not currentRoom
       return []
-    Messages.find {roomId: currentRoom._id, deleted: null}, {sort: {timestamp: -1}}
+    Messages.find {roomId: currentRoom._id, deleted: null},
+      {sort: {timestamp: -1}}
+
+  Template['user-items'].events
+    'click .drop-btn': () ->
+      placeItem @name
+
+  Template.items.events
+    'click .take-btn': () ->
+      takeItem @name
+
+  Template.items.items = ->
+    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+    if not currentRoom
+      return []
+    Items.find {roomId: currentRoom._id},
+      {sort: {timestamp: -1}}
+
+  Template.users.users = ->
+    Meteor.users.find {}, {sort: {'profile.name': 1}}
+
+  Template.user.imageUrl = ->
+    getUserImage @_id
+
+  Template.currentUserImage.imageUrl = ->
+    if Meteor.user()
+      getUserImage Meteor.user()._id
+    else
+      ''
 
   Template.room.room = ->
     Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -146,6 +238,14 @@ if Meteor.isClient
     else
       return "#{room.name} room"
 
+  @getItemImage = (itemId, name) ->
+    imageUrl = window.prompt "Enter an image url for #{name}:"
+    console.log imageUrl
+    if /^http/.test imageUrl
+      Items.update {_id: itemId},
+        $set: {imageUrl: imageUrl}
+    return
+
   @switchToRoom = (roomName) ->
     room = findRoom roomName
     if room
@@ -156,6 +256,46 @@ if Meteor.isClient
         name: roomName
         lcname: roomName.toLowerCase()
         timestamp: Date.now()
+
+  @takeItem = (itemName, currentRoom) ->
+    if not currentRoom
+      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+    item = findItem itemName
+    if item
+      if item.roomId is currentRoom._id
+        if typeof item.holderId isnt 'string'
+          if item.creatorId isnt Meteor.user()._id
+            item.holderId = Meteor.user()._id
+            item.roomId = null
+            Items.update {_id: item._id}, item
+          else
+            window.alert "You cannot hold your own creations."
+        else
+          window.alert "The #{item.name} already has a holder."
+      else
+        window.alert "The #{item.name} is not in this room."
+    else
+      window.alert "There is no such thing as the #{item.name}. Are you not familiar with /place?"
+      
+
+  @placeItem = (itemName, room) ->
+    room or= Rooms.findOne {}, {sort: {timestamp: -1}}
+    item = findItem itemName
+    if item
+      if item.holderId is Meteor.user()._id
+        item.holderId = null
+        item.roomId = room._id
+        Items.update {_id: item._id}, item
+      else
+        window.alert "You are not holding the #{item.name}"
+    else
+      Items.insert
+        name: itemName
+        lcname: itemName.toLowerCase()
+        timestamp: Date.now()
+        roomId: room._id
+        creatorId: Meteor.user()._id
+        holderId: null
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -170,6 +310,16 @@ if Meteor.isClient
         if roomIndex >= 0
           roomName = msg.substr(roomIndex + 6)
           switchToRoom roomName
+
+        placeItemIndex = msg.indexOf('/place ')
+        if placeItemIndex >= 0
+          placeItemName = msg.substr(placeItemIndex + 7)
+          placeItem placeItemName, currentRoom
+
+        takeItemIndex = msg.indexOf('/take ')
+        if takeItemIndex >= 0
+          takeItemName = msg.substr(takeItemIndex + 6)
+          takeItem takeItemName, currentRoom
 
         imageIndex = msg.indexOf('/image ')
         if imageIndex >= 0
@@ -208,13 +358,13 @@ if Meteor.isServer
     # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
     weather_api_url = 'http://api.wunderground.com/api/8389a57897d1480d/conditions/q/CA/San_Francisco.json'
     Meteor.http.get weather_api_url, (error, result) ->
-      if result isnt null
+      if result?.data?
         WeatherReports.insert result.data.current_observation, (obj, _id) ->
           log 'info', 'collected weather data'
           WeatherReports.remove _id: $ne: _id
 
   Meteor.startup ->
-    console.log 'Starting Fort Borilliam'
+    console.log 'Starting The Borilliam'
     collectWeatherReport()
     Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
 
@@ -228,6 +378,7 @@ if Meteor.isServer
         timestamp: Date.now()
 
 @Rooms = Rooms
+@Items = Items
 @Messages = Messages
 @WeatherReports = WeatherReports
 @formatDate = formatDate

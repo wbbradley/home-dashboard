@@ -1,8 +1,7 @@
 <head>
 	<title>The Borilliam</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	<!-- <link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'> -->
 	<script>
 		function redisplayDiffTimes() {
 			$('span[data-time]').each(function (index, value) {
@@ -27,21 +26,31 @@
 
 <body>
 	<div class="container-fluid" style="padding-top: 1.5em">
-		<div class="well" style="position:relative">
-			<div class="row-fluid">
-				<div class="span6">
-					<div class="lead">The Borilliam</div>
+		<div class="well titlebar">
+			<span style="display:inline-block;padding-top: 30px;font-size: 60px;line-height:44px;">The<br>Borilliam</span>
+			<div class="pull-right" style="padding-top: 20px">
+				<div>
+					{{> currentUserImage}}
 				</div>
-				<div class="span6">
-					{{> weather-report}}
-				</div>
+				{{loginButtons}}
 			</div>
 		</div>
 		<div class="row-fluid">
-			<div class="span12">
-				{{> room}}
-				{{> send-message}}
-				{{> messages}}
+			<div class="span3">
+				{{#if currentUser}}
+					{{> users}}
+				{{/if}}
+			</div>
+			<div class="span9">
+				{{#if currentUser}}
+					{{> room}}
+					{{> send-message}}
+					{{> memificator}}
+					{{> items}}
+					{{> messages}}
+				{{else}}
+					You are not logged in.
+				{{/if}}
 			</div>
 		</div>
 		<div class="row-fluid">
@@ -53,15 +62,103 @@
 </body>
 
 <template name="weather-report">
+<div class="top-login-block">
 {{#with weather}}
 	{{weather.weather}} / {{feelslike_string}}
 {{/with}}
-	<br/>
-	{{loginButtons}}
+<br/>
+</div>
 </template>
 
 <template name="room">
 We are in the {{roomName}}.<br>
+</template>
+
+<template name="items">
+<div class="room-items">
+	{{#each items}}
+	<div class="room-item">
+		<div class="image pull-left">
+			{{#if imageUrl}}
+				<img src="{{imageUrl}}" />
+			{{else}}
+				<a class="assign" href="javascript:getItemImage('{{_id}}', '{{name}}')">...</a>
+			{{/if}}
+		</div>
+		<div class="name">
+			{{name}}
+		</div>
+		<div class="tools">
+			<button class="take-btn btn btn-small btn-info">
+				<i class="icon-white icon-upload"></i>
+			</button>
+		</div>
+	</div>
+{{else}}
+	There are no items in this room.
+{{/each}}
+</div>
+</template>
+
+<template name="currentUserImage">
+<div class="current-user">
+	<img src="{{imageUrl}}" />
+</div>
+</template>
+
+<template name="user-item">
+<div class="user-item">
+	{{#ifMine this}}
+		<div class="tools">
+			<button class="drop-btn btn btn-small btn-info">
+				<i class="icon-white icon-download"></i>
+			</button>
+		</div>
+	{{else}}
+		<div class="image pull-left">
+			{{#if imageUrl}}
+				<img src="{{imageUrl}}" />
+			{{else}}
+				<a class="assign" href="javascript:getItemImage('{{_id}}', '{{name}}')">...</a>
+			{{/if}}
+		</div>
+		{{/ifMine}}
+	<div class="name">
+		{{name}}
+	</div>
+</div>
+</template>
+<template name="user-items">
+<div class="user-items">
+	{{#each items}}
+		{{> user-item}}
+	{{else}}
+		Empty bag.
+	{{/each}}
+</div>
+</template>
+
+<template name="user">
+<div class="user">
+	<img src="{{imageUrl}}" />
+	<div class="user-info">
+		{{profile.name}}
+	</div>
+	<div class="clearfix">
+	</div>
+	{{> user-items}}
+</div>
+</template>
+<template name="users">
+<div class="hidden-mobile users">
+
+{{#each users}}
+	{{> user}}
+{{else}}
+	No users.
+{{/each}}
+
+</div>
 </template>
 
 <template name="messages">
@@ -80,9 +177,17 @@ We are in the {{roomName}}.<br>
 {{#if currentUser}}
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" style="width:50%" name="new-message"></input>
-		<input class="btn btn-primary" type="button" name="send" value="Send"></input>
+		<input class="btn btn-primary" type="button" name="send" value="Mentum"></input>
 	</form>
 {{/if}}
+</template>
+
+<template name="memificator">
+<div class="meme">
+	<img src="/fortress.png" />
+	<div contenteditable class="title">TITLE</div>
+	<div contenteditable class="subtitle">SUBTITLE</div>
+</div>
 </template>
 
 <template name="message">
@@ -118,7 +223,7 @@ We are in the {{roomName}}.<br>
 			{{/ifNotLoved}}
 			{{#ifOwner this}}
 				<button class="btn btn-warning love-btn btn-small">
-					<i class="icon-white icon-remove"></i>
+					<i class="icon-white icon-trash"></i>
 				</button>
 			{{/ifOwner}}
 		</div>
