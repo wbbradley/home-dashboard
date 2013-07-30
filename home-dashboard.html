@@ -1,7 +1,7 @@
 <head>
 	<title>The Borilliam</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- <link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'> -->
+	<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
 	<script>
 		function redisplayDiffTimes() {
 			$('span[data-time]').each(function (index, value) {
@@ -25,41 +25,44 @@
 </head>
 
 <body>
-	<div class="container-fluid" style="padding-top: 1.5em">
-		<div class="well titlebar">
-			<span style="display:inline-block;padding-top: 30px;font-size: 60px;line-height:44px;">The<br>Borilliam</span>
-			<div class="pull-right" style="padding-top: 20px">
-				<div>
-					{{> currentUserImage}}
-				</div>
-				{{loginButtons}}
+	{{> body}}
+</body>
+
+<template name="body">
+<div class="container-fluid" style="padding-top: 1.5em">
+	<div class="well titlebar image" style="background-image: url({{background}})">
+		<span class="borilliam-title" ><span class="the">The</span><br>&nbsp;&nbsp;Borilliam</span>
+		<div class="pull-right" style="padding-top: 20px">
+			<div>
+				{{> currentUserImage}}
 			</div>
-		</div>
-		<div class="row-fluid">
-			<div class="span3">
-				{{#if currentUser}}
-					{{> users}}
-				{{/if}}
-			</div>
-			<div class="span9">
-				{{#if currentUser}}
-					{{> room}}
-					{{> send-message}}
-					{{> memificator}}
-					{{> items}}
-					{{> messages}}
-				{{else}}
-					You are not logged in.
-				{{/if}}
-			</div>
-		</div>
-		<div class="row-fluid">
-			<div class="span12 text-center">
-				<img src="/fortress.png" width="64px">
-			</div>
+			{{loginButtons}}
 		</div>
 	</div>
-</body>
+	<div class="row-fluid">
+		<div class="span4">
+			{{#if currentUser}}
+			{{> users}}
+			{{/if}}
+		</div>
+		<div class="span8">
+			{{#if currentUser}}
+			{{> room}}
+			{{> send-message}}
+			{{> items}}
+			{{> messages}}
+			{{else}}
+			You are not logged in.
+			{{/if}}
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span12 text-center">
+			<img src="/fortress.png" width="64px">
+		</div>
+	</div>
+</div>
+</template>
 
 <template name="weather-report">
 <div class="top-login-block">
@@ -82,7 +85,7 @@ We are in the {{roomName}}.<br>
 			{{#if imageUrl}}
 				<img src="{{imageUrl}}" />
 			{{else}}
-				<a class="assign" href="javascript:getItemImage('{{_id}}', '{{name}}')">...</a>
+				<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
 			{{/if}}
 		</div>
 		<div class="name">
@@ -107,29 +110,28 @@ We are in the {{roomName}}.<br>
 </template>
 
 <template name="user-item">
-<div class="user-item">
+<div class="user-item row-fluid">
 	{{#ifMine this}}
 		<div class="tools">
 			<button class="drop-btn btn btn-small btn-info">
 				<i class="icon-white icon-download"></i>
 			</button>
 		</div>
-	{{else}}
-		<div class="image pull-left">
-			{{#if imageUrl}}
-				<img src="{{imageUrl}}" />
-			{{else}}
-				<a class="assign" href="javascript:getItemImage('{{_id}}', '{{name}}')">...</a>
-			{{/if}}
-		</div>
-		{{/ifMine}}
+	{{/ifMine}}
+	<div class="span2">
+		{{#if imageUrl}}
+			<img src="{{imageUrl}}" />
+		{{else}}
+			<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
+		{{/if}}
+	</div>
 	<div class="name">
 		{{name}}
 	</div>
 </div>
 </template>
 <template name="user-items">
-<div class="user-items">
+<div class="container-fluid user-items">
 	{{#each items}}
 		{{> user-item}}
 	{{else}}
@@ -140,7 +142,8 @@ We are in the {{roomName}}.<br>
 
 <template name="user">
 <div class="user">
-	<img src="{{imageUrl}}" />
+	<div class="image hidden-phone" style="background-image: url({{imageUrl}})"></div>
+	<div class="image visible-phone" style="background-image: url({{imageUrl}})"></div>
 	<div class="user-info">
 		{{profile.name}}
 	</div>
@@ -183,18 +186,38 @@ We are in the {{roomName}}.<br>
 </template>
 
 <template name="memificator">
-<div class="meme">
-	<img src="/fortress.png" />
-	<div contenteditable class="title">TITLE</div>
-	<div contenteditable class="subtitle">SUBTITLE</div>
+<div class="meme-container"
+	style="background-image: url({{imageUrl}})">
+	<div class="inner">
+		<div class="top">
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{memeTitle}}</span><br/>
+		</div>
+		<div class="bottom">
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-subtitle" class="subtitle meme-text">{{memeSubtitle}}</span>
+		</div>
+	</div>
+</div>
+</template>
+
+<template name="memeDisplay">
+<div class="image meme-container"
+	style="background-image: url({{imageUrl}})">
+	<div class="inner">
+		<div class="top">
+			<span class="title meme-text">{{memeTitle}}</span><br/>
+		</div>
+		<div class="bottom">
+			<span class="subtitle meme-text">{{memeSubtitle}}</span>
+		</div>
+	</div>
 </div>
 </template>
 
 <template name="message">
-<li class="feature well media">
+<li class="message feature well media">
 	<div class="pull-left">
-		<img class="avatar-img hidden-phone" src="{{getAuthorImage authorId}}" />
-		<img class="avatar-img visible-phone" src="{{getAuthorImage authorId}}" />
+		<div class="image hidden-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
+		<div class="image visible-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
 	</div>
 	<div class="media-body">
 		<div class="media-heading">
@@ -204,6 +227,13 @@ We are in the {{roomName}}.<br>
 				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
 			</span>
 		</div>
+		{{#if meme}}
+			{{#ifOwner this}}
+				{{> memificator}}
+			{{else}}
+				{{> memeDisplay}}
+			{{/ifOwner}}
+		{{else}}
 		{{#if msg}}
 			<span class="sent-message">{{say msg}}</span>
 		{{/if}}
@@ -215,16 +245,26 @@ We are in the {{roomName}}.<br>
 			src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com"
 			frameborder="0"></iframe>
 		{{/if}}
+		{{/if}}
 		<div class="tools">
-			{{#ifNotLoved this}}
-				<button class="love-btn btn btn-small btn-danger">
-					<i class="icon-white icon-heart"></i>
-				</button>
-			{{/ifNotLoved}}
 			{{#ifOwner this}}
-				<button class="btn btn-warning love-btn btn-small">
+				{{#if imageUrl}}
+					{{#if meme}}
+					{{else}}
+						<button class="meme-btn btn btn-small btn-warning">
+							<i class="icon-white icon-fire"></i>
+						</button>
+					{{/if}}
+				{{/if}}
+				<button class="btn btn-warning delete-btn btn-small">
 					<i class="icon-white icon-trash"></i>
 				</button>
+			{{else}}
+				{{#ifNotLoved this}}
+					<button class="love-btn btn btn-small btn-danger">
+						<i class="icon-white icon-heart"></i>
+					</button>
+				{{/ifNotLoved}}
 			{{/ifOwner}}
 		</div>
 		<div>

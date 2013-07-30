@@ -89,6 +89,10 @@ if Meteor.isClient
       ret = 'just now'
     ret
 
+  Template.body.helpers
+    background: ->
+      @getGlobal 'background', ''
+
   Template['user-item'].helpers
     ifMine: (context, options) ->
       if Meteor.user()?._id is @holderId
@@ -112,6 +116,12 @@ if Meteor.isClient
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
+    'click .meme-btn': () ->
+      Messages.update {_id: @_id},
+        $set:
+          meme: true
+          memeTitle: 'title'
+          memeSubtitle: 'subtitle'
     'click .love-btn': () ->
       if Meteor.user()?._id?
         log 'info', "#{Meteor.user().profile.name} liked a post"
@@ -238,8 +248,39 @@ if Meteor.isClient
     else
       return "#{room.name} room"
 
-  @getItemImage = (itemId, name) ->
-    imageUrl = window.prompt "Enter an image url for #{name}:"
+  @balanceText = (event) ->
+    $(event.target).parent().textfill
+      maxFontPixels: 80
+      maxWidth: $(event.target).parents('.meme-container').width()
+
+  @updateMeme = (_id) ->
+    title = $("#meme-#{_id}-title")[0]?.innerText or ''
+    subtitle = $("#meme-#{_id}-subtitle")[0]?.innerText or ''
+      
+    Messages.update {_id: _id},
+      $set:
+        memeTitle: title
+        memeSubtitle: subtitle
+
+
+  Template.memeDisplay.rendered = Template.memificator.rendered = ->
+    $firstNode = $(@firstNode)
+    maxWidth = $firstNode.width()
+    $firstNode.find('.meme-text').each ->
+      $(@).parent().textfill
+        maxFontPixels: 80
+        maxWidth: maxWidth
+    return
+
+  Template.memificator.events
+    'keyup .meme-text': @balanceText
+    'blur .meme-text': (event) -> window.updateMeme $(event.target).data('msg-id')
+      
+  @getItemImage = (itemId) ->
+    item = Items.findOne {_id: itemId}
+    if not item
+      return
+    imageUrl = window.prompt "Enter an image url for #{item.name}:"
     console.log imageUrl
     if /^http/.test imageUrl
       Items.update {_id: itemId},
@@ -264,7 +305,7 @@ if Meteor.isClient
     if item
       if item.roomId is currentRoom._id
         if typeof item.holderId isnt 'string'
-          if item.creatorId isnt Meteor.user()._id
+          if true or item.creatorId isnt Meteor.user()._id
             item.holderId = Meteor.user()._id
             item.roomId = null
             Items.update {_id: item._id}, item

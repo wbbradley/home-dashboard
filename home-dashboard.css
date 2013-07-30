@@ -3,30 +3,41 @@
 body, html {
 	width: 100%;
 	height: 100%;
-	font-family: fantasy;
-	font-weight: bold;
+	font-family: 'Cutive', fantasy;
+	font-weight: 400;
 }
 
 .well.titlebar {
-	background:url(/skyline-01.jpg);
+	background-color: darkgreen;
 	background-size: cover; 
 	position:relative;
-	color: #1d8d34;
+	color: #f0f0f0;
 	
 }
 
-.avatar-img.hidden-phone {
-	width: 60px;
-	height: 60px;
-	// border-radius: 25%;
-	mask-image: polygon(0px 60px, 60px 60px, 40px 60px, 0px 0px);
+.borilliam-title {
+	display: inline-block;
+	padding-top: 30px;
+	font-size: 60px;
 }
 
-.avatar-img.visible-phone {
-	width: 2em;
-	height: 2em;
-	border-radius: 25%;
+.borilliam-title .the {
+	font-size: 20px;
+	-webkit-text-stroke: none;
+	color: grey;
 }
+
+.image {
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: 50% 50%;
+}
+
+.user .image {
+	width: 60px;
+	height: 60px;
+}
+
 
 .author {
 	font-size: smaller;
@@ -49,7 +60,7 @@ body, html {
 }
 
 .user-item .tools {
-	float: left;
+	position: absolute;
 	top: 10px;
 	right: 10px;
 	z-index: 1;
@@ -75,10 +86,13 @@ body, html {
 	margin-bottom: 10px;
 }
 
+.user-items {
+	padding-left: 0px;
+}
+
 .user-item {
 	position: relative;
 	margin: 0px 0px 10px 0px;
-	border-radius: 2px;
 	background-color: #f0f0f0;
 	border: 1px solid #ccc;
 	padding: 10px;
@@ -88,17 +102,27 @@ body, html {
 .user-item .image {
 	width: 32px;
 	height: 32px;
+	display: inline-block;
 	max-width: 32px;
 	max-height: 32px;
-	border-radius: 10px;
 	overflow: hidden;
 	margin-right: 20px;
 }
 
+.message .image.visible-phone {
+	width: 32px;
+	height: 32px;
+}
+
+.message .image.hidden-phone {
+	width: 64px;
+	height: 64px;
+}
+
+
 .room-item {
 	position: relative;
 	margin: 0px 0px 10px 0px;
-	border-radius: 2px;
 	background-color: #f0f0f0;
 	border: 1px solid #ccc;
 	max-width: 300px;
@@ -128,14 +152,6 @@ a.assign {
 	text-align: center;
 }
 
-.user img {
-	float: left;
-	max-width: 100%;
-	margin: 10px;
-	width: 2em;
-	height: 2em;
-}
-
 .user div.user-info {
 	padding-top: 12px;
 }
@@ -145,21 +161,55 @@ a.assign {
 	max-height: 30px;
 }
 
-.meme {
+.meme-container {
+	max-width: 350px;
+	max-height: 350px;
 	width: 350px;
 	height: 350px;
+	padding: 20px;
+	border: 3px solid black;
+	text-align: center;
+	background-size: cover;
+	background-position: 50% 50%;
+	white-space: nowrap;
+	color: white;
+	-webkit-text-stroke: 3px black;
+	font-family: 'Impact', sans-serif;
 }
 
-.meme img {
+.meme-container .inner {
 	width: 100%;
 	height: 100%;
+	position: relative;
+}
+
+.meme-container .top {
+	text-align: center;
+	text-transform: uppercase;
+	overflow: visible;
+	position: absolute;
+	width: 100%;
+	top: 0;
+}
+
+.meme-container .bottom {
+	text-align: center;
+	text-transform: uppercase;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
 }
 
 .meme .title {
-	position: absolute;
-	text-align: center;
 	width: 100%;
-	height: 100%;
+	font-size: 50px;
+	font-weight: bolder;
+}
+
+.meme .subtitle {
+	width: 100%;
+	font-size: 50px;
+	font-weight: bolder;
 }
 
 /* Workaround padding issue on iPhone */
