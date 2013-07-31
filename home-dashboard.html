@@ -40,12 +40,12 @@
 		</div>
 	</div>
 	<div class="row-fluid">
-		<div class="span2">
+		<div class="span3">
 			{{#if currentUser}}
 			{{> users}}
 			{{/if}}
 		</div>
-		<div class="span10">
+		<div class="span9">
 			{{#if currentUser}}
 			{{> room}}
 			{{> send-message}}
@@ -113,13 +113,6 @@ We are in the {{roomName}}.<br>
 
 <template name="user-item">
 <div class="user-item">
-	{{#ifMine this}}
-	<div class="tools">
-		<button class="drop-btn btn btn-small btn-info">
-			<i class="icon-white icon-download"></i>
-		</button>
-	</div>
-	{{/ifMine}}
 	{{#if imageUrl}}
 	<div class="item image" style="background-image:url({{imageUrl}})"></div>
 	{{else}}
@@ -127,6 +120,15 @@ We are in the {{roomName}}.<br>
 		<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
 	</div>
 	{{/if}}
+
+	{{#ifMine this}}
+	<div class="tools">
+		<button class="drop-btn btn btn-small btn-info">
+			<i class="icon-white icon-download"></i>
+		</button>
+	</div>
+	{{/ifMine}}
+
 	<div class="name">
 		{{name}}
 	</div>
@@ -223,7 +225,6 @@ We are in the {{roomName}}.<br>
 	<div class="media-body">
 		<div class="media-heading">
 			<span class="author">{{author.profile.name}}</span>
-			<br>
 			<span class="time muted">
 				<span data-time="{{timestamp}}">{{date-render timestamp}}</span>
 			</span>
