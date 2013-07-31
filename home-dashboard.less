@@ -1,4 +1,11 @@
 /* CSS declarations go here */
+.rounded-corners (@radius: 5px) {
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+	-ms-border-radius: @radius;
+	-o-border-radius: @radius;
+	border-radius: @radius;
+}
 
 body, html {
 	width: 100%;
@@ -12,32 +19,69 @@ body, html {
 	background-size: cover; 
 	position:relative;
 	color: #f0f0f0;
-	
+	.rounded-corners;
 }
 
 .borilliam-title {
 	display: inline-block;
 	padding-top: 30px;
 	font-size: 60px;
-}
 
-.borilliam-title .the {
-	font-size: 20px;
-	-webkit-text-stroke: none;
-	color: grey;
+	.the {
+		font-size: 20px;
+		-webkit-text-stroke: none;
+		color: grey;
+	}
 }
 
 .image {
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: 50% 50%;
+	.rounded-corners;
 }
 
-.user .image {
-	width: 60px;
-	height: 60px;
+.login-tools {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin-right: 10px;
 }
 
+.login-tools {
+	.current-user {
+		.image {
+			width: 70px;
+			height: 70px;
+			float: right;
+			margin: 0 10px 10px 0;
+		}
+	}
+}
+
+.user {
+   	.image {
+		float: left;
+	}
+}
+
+
+.user {
+   	.image.avatar {
+		width: 60px;
+		height: 60px;
+		margin: 4px;
+	}
+
+	 .image.item {
+		width: 30px;
+		height:30px;
+	}
+}
+
+.user-item {
+	font-size: smaller;
+}
 
 .author {
 	font-size: smaller;
@@ -90,44 +134,59 @@ body, html {
 	padding-left: 0px;
 }
 
-.user-item {
-	position: relative;
-	margin: 0px 0px 10px 0px;
-	background-color: #f0f0f0;
-	border: 1px solid #ccc;
-	padding: 10px;
-}
-
-.room-item .image,
-.user-item .image {
-	width: 32px;
-	height: 32px;
-	display: inline-block;
-	max-width: 32px;
-	max-height: 32px;
-	overflow: hidden;
-	margin-right: 20px;
-}
-
-.message .image.visible-phone {
-	width: 32px;
-	height: 32px;
-}
-
-.message .image.hidden-phone {
+.item-size () {
 	width: 64px;
 	height: 64px;
+	display: block;
+	overflow: hidden;
+	.rounded-corners;
 }
 
+.user-item {
+	position: relative;
+	margin: 0;
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+	padding: 2px;
+
+	.rounded-corners;
+
+	.image {
+		.item-size;
+		margin-right: 10px;
+	}
+}
+
+.room-item {
+	.rounded-corners;
+}
 
 .room-item {
 	position: relative;
-	margin: 0px 0px 10px 0px;
+	margin: 0px 0px 1px 0px;
 	background-color: #f0f0f0;
 	border: 1px solid #ccc;
 	max-width: 300px;
 	padding: 20px;
+
+   	.image {
+		.item-size;
+		margin-right: 20px;
+	}
 }
+
+.message {
+	.avatar.image.visible-phone {
+		width: 32px;
+		height: 32px;
+	}
+
+	.image.hidden-phone {
+		width: 64px;
+		height: 64px;
+	}
+}
+
 
 a.assign {
 	display: block;
@@ -135,7 +194,6 @@ a.assign {
 }
 
 .room-item .name {
-	padding-top: 10px;
 	min-width: 100px;
 }
 
@@ -152,8 +210,13 @@ a.assign {
 	text-align: center;
 }
 
+.user {
+	.rounded-corners;
+}
+
 .user div.user-info {
 	padding-top: 12px;
+	padding-left: 80px;
 }
 
 .current-user img {

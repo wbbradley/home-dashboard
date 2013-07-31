@@ -254,8 +254,8 @@ if Meteor.isClient
       maxWidth: $(event.target).parents('.meme-container').width()
 
   @updateMeme = (_id) ->
-    title = $("#meme-#{_id}-title")[0]?.innerText or ''
-    subtitle = $("#meme-#{_id}-subtitle")[0]?.innerText or ''
+    title = $("#meme-#{_id}-title")[0]?.innerHTML or ''
+    subtitle = $("#meme-#{_id}-subtitle")[0]?.innerHTML or ''
       
     Messages.update {_id: _id},
       $set:

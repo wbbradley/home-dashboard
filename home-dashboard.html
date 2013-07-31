@@ -32,7 +32,7 @@
 <div class="container-fluid" style="padding-top: 1.5em">
 	<div class="well titlebar image" style="background-image: url({{background}})">
 		<span class="borilliam-title" ><span class="the">The</span><br>&nbsp;&nbsp;Borilliam</span>
-		<div class="pull-right" style="padding-top: 20px">
+		<div class="login-tools" style="padding-top: 20px">
 			<div>
 				{{> currentUserImage}}
 			</div>
@@ -40,12 +40,12 @@
 		</div>
 	</div>
 	<div class="row-fluid">
-		<div class="span4">
+		<div class="span2">
 			{{#if currentUser}}
 			{{> users}}
 			{{/if}}
 		</div>
-		<div class="span8">
+		<div class="span10">
 			{{#if currentUser}}
 			{{> room}}
 			{{> send-message}}
@@ -81,13 +81,14 @@ We are in the {{roomName}}.<br>
 <div class="room-items">
 	{{#each items}}
 	<div class="room-item">
-		<div class="image pull-left">
 			{{#if imageUrl}}
-				<img src="{{imageUrl}}" />
+			<div class="image pull-left" style="background-image:url({{imageUrl}})">
+			</div>
 			{{else}}
+			<div class="image pull-left">
 				<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
+			</div>
 			{{/if}}
-		</div>
 		<div class="name">
 			{{name}}
 		</div>
@@ -96,6 +97,7 @@ We are in the {{roomName}}.<br>
 				<i class="icon-white icon-upload"></i>
 			</button>
 		</div>
+		<div class="clearfix"></div>
 	</div>
 {{else}}
 	There are no items in this room.
@@ -105,45 +107,44 @@ We are in the {{roomName}}.<br>
 
 <template name="currentUserImage">
 <div class="current-user">
-	<img src="{{imageUrl}}" />
+	<div class="image" style="background-image:url({{imageUrl}})"></div>
 </div>
 </template>
 
 <template name="user-item">
-<div class="user-item row-fluid">
+<div class="user-item">
 	{{#ifMine this}}
-		<div class="tools">
-			<button class="drop-btn btn btn-small btn-info">
-				<i class="icon-white icon-download"></i>
-			</button>
-		</div>
-	{{/ifMine}}
-	<div class="span2">
-		{{#if imageUrl}}
-			<img src="{{imageUrl}}" />
-		{{else}}
-			<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
-		{{/if}}
+	<div class="tools">
+		<button class="drop-btn btn btn-small btn-info">
+			<i class="icon-white icon-download"></i>
+		</button>
 	</div>
+	{{/ifMine}}
+	{{#if imageUrl}}
+	<div class="item image" style="background-image:url({{imageUrl}})"></div>
+	{{else}}
+	<div class="pull-left">
+		<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
+	</div>
+	{{/if}}
 	<div class="name">
 		{{name}}
 	</div>
+	<div class="clearfix"></div>
 </div>
 </template>
 <template name="user-items">
-<div class="container-fluid user-items">
+<div class="user-items">
 	{{#each items}}
 		{{> user-item}}
-	{{else}}
-		Empty bag.
 	{{/each}}
 </div>
 </template>
 
 <template name="user">
 <div class="user">
-	<div class="image hidden-phone" style="background-image: url({{imageUrl}})"></div>
-	<div class="image visible-phone" style="background-image: url({{imageUrl}})"></div>
+	<div class="avatar image hidden-phone" style="background-image: url({{imageUrl}})"></div>
+	<div class="avatar image visible-phone" style="background-image: url({{imageUrl}})"></div>
 	<div class="user-info">
 		{{profile.name}}
 	</div>
@@ -190,10 +191,10 @@ We are in the {{roomName}}.<br>
 	style="background-image: url({{imageUrl}})">
 	<div class="inner">
 		<div class="top">
-			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{memeTitle}}</span><br/>
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{{memeTitle}}}</span><br/>
 		</div>
 		<div class="bottom">
-			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-subtitle" class="subtitle meme-text">{{memeSubtitle}}</span>
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-subtitle" class="subtitle meme-text">{{{memeSubtitle}}}</span>
 		</div>
 	</div>
 </div>
@@ -204,10 +205,10 @@ We are in the {{roomName}}.<br>
 	style="background-image: url({{imageUrl}})">
 	<div class="inner">
 		<div class="top">
-			<span class="title meme-text">{{memeTitle}}</span><br/>
+			<span class="title meme-text">{{{memeTitle}}}</span><br/>
 		</div>
 		<div class="bottom">
-			<span class="subtitle meme-text">{{memeSubtitle}}</span>
+			<span class="subtitle meme-text">{{{memeSubtitle}}}</span>
 		</div>
 	</div>
 </div>
@@ -216,8 +217,8 @@ We are in the {{roomName}}.<br>
 <template name="message">
 <li class="message feature well media">
 	<div class="pull-left">
-		<div class="image hidden-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
-		<div class="image visible-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
+		<div class="avatar image hidden-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
+		<div class="avatar image visible-phone" style="background-image:url({{getAuthorImage authorId}})"></div>
 	</div>
 	<div class="media-body">
 		<div class="media-heading">
