@@ -8,12 +8,20 @@ Items = new Meteor.Collection 'items'
 WeatherReports = new Meteor.Collection 'weather_reports'
 Globals = new Meteor.Collection 'globals'
 
+subscribeList =
+  'users': Meteor.users
+  'messages': Messages
+  'rooms': Rooms
+  'items': Items
+  'weather_reports': WeatherReports
+  'globals': Globals
+
 @getGlobal = (name, _default) ->
   _default or= null
   global = Globals.findOne {name: name}
   if global
     return global.value
-  else
+  else if Meteor.user() and _default
     Globals.insert
       name: name
       value: _default
@@ -130,7 +138,7 @@ if Meteor.isClient
   @getUserImage  = (authorId) ->
     author = Meteor.users.findOne {_id:authorId}
     unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
-    if author
+    if author?.services?
       if author.services.twitter
         return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
       else if author.services.google
@@ -289,8 +297,8 @@ if Meteor.isClient
   @switchToRoom = (roomName) ->
     room = findRoom roomName
     if room
-      room.timestamp = Date.now()
-      Rooms.update room._id, room
+      Rooms.update {_id: room._id},
+        $set: {timestamp: Date.now()}
     else
       Rooms.insert
         name: roomName
@@ -304,10 +312,11 @@ if Meteor.isClient
     if item
       if item.roomId is currentRoom._id
         if typeof item.holderId isnt 'string'
-          if true or item.creatorId isnt Meteor.user()._id
-            item.holderId = Meteor.user()._id
-            item.roomId = null
-            Items.update {_id: item._id}, item
+          if item.creatorId isnt Meteor.user()._id
+            Items.update {_id: item._id},
+              $set:
+                holderId: Meteor.user()._id
+                roomId: null
           else
             window.alert "You cannot hold your own creations."
         else
@@ -323,9 +332,10 @@ if Meteor.isClient
     item = findItem itemName
     if item
       if item.holderId is Meteor.user()._id
-        item.holderId = null
-        item.roomId = room._id
-        Items.update {_id: item._id}, item
+        Items.update {_id: item._id},
+          $set:
+            holderId: null
+            roomId: room._id
       else
         window.alert "You are not holding the #{item.name}"
     else
@@ -391,7 +401,15 @@ if Meteor.isClient
       return
     'click input[name=send]' : ->
       captureAndSendMessage()
-      
+
+  Deps.autorun ->
+    user = Meteor.user()
+    if user
+      for name, template of Template
+        template.settings = getGlobal 'settings'
+
+  for name, collection of subscribeList
+    Meteor.subscribe name
 
 if Meteor.isServer
   Meteor.Router.add '/boris/:state', (state) ->
@@ -405,9 +423,60 @@ if Meteor.isServer
     else
       return "boris is not here"
 
+  @throwPermissionDenied = ->
+    throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.site.domain} is not open to the public. Please contact your host for an invitation."
+
+  Meteor.settings.site.whitelist = ([].concat Meteor.settings.site.whitelist).sort()
+
+  endsWith = (string, suffix) ->
+      string.indexOf(suffix, string.length - suffix.length) isnt -1
+
+  validUserByEmail = (user) ->
+    email = user?.services?.google?.email
+    if email
+      if endsWith email, "@#{Meteor.settings.site.domain}"
+        return true
+      if _.indexOf(Meteor.settings.site.whitelist, email, true) isnt -1
+        return true
+    console.log "validUserByEmail : info : denied \"#{email}\""
+    return false
+
+  # Setup security features
+  Meteor.users.deny
+    update: () ->
+      return true
+
+  publishCollection = (name, collection) ->
+    Meteor.publish name, () ->
+      user = Meteor.users.findOne @userId
+      if user
+        console.log "Handling publish of #{name} to #{user.profile.name}"
+        if validUserByEmail user
+          return collection.find()
+      return undefined
+
+    collection.allow
+      insert: (userId, doc) ->
+        return validUserByEmail Meteor.users.findOne userId
+      update: (userId, doc, fieldNames, modifier) ->
+        return validUserByEmail Meteor.users.findOne userId
+      remove: (userId, doc) ->
+        return validUserByEmail Meteor.users.findOne userId
+
+  for name, collection of subscribeList
+    publishCollection name, collection
+
+
+  Accounts.validateNewUser (user) ->
+    if validUserByEmail user
+      return true
+    do @throwPermissionDenied
+
+  @setGlobal 'settings', Meteor.settings
+
   collectWeatherReport = ->
     # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
-    weather_api_url = 'http://api.wunderground.com/api/8389a57897d1480d/conditions/q/CA/San_Francisco.json'
+    weather_api_url = Meteor.settings.weather.url
     Meteor.http.get weather_api_url, (error, result) ->
       if result?.data?
         WeatherReports.insert result.data.current_observation, (obj, _id) ->
@@ -415,9 +484,12 @@ if Meteor.isServer
           WeatherReports.remove _id: $ne: _id
 
   Meteor.startup ->
-    console.log 'Starting The Borilliam'
-    collectWeatherReport()
-    Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
+    if not Meteor.settings?.site?.title
+      throw new Error "Settings are uninitialized."
+    console.log "Starting #{Meteor.settings.site.title}"
+    if Meteor.settings.weather
+      collectWeatherReport()
+      Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
 
     lobby = findRoom 'lobby'
     if lobby

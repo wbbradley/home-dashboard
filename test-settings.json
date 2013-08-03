@@ -1,0 +1,11 @@
+{
+	"site": {
+		"title": "The Locilliam",
+		"domain": "gmail.com",
+	},
+	"google": {
+		"analytics": {
+			"apiKey": "xxxxx"
+		}
+	}
+}

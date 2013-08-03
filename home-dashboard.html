@@ -1,7 +1,7 @@
 <head>
-	<title>The Borilliam</title>
+	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
+	<link href='//fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
 	<script>
 		function redisplayDiffTimes() {
 			$('span[data-time]').each(function (index, value) {
@@ -12,26 +12,21 @@
 			window.setInterval(redisplayDiffTimes, 10000);
 		});
 	</script>
-	<script>
-	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-41645535-1', 'borilliam.com');
-  ga('send', 'pageview');
-
-</script>
 </head>
 
 <body>
 	{{> body}}
+	{{> scripts}}
 </body>
 
 <template name="body">
+<script>
+	document.title = '{{settings.site.title}}';
+</script>
+
 <div class="container-fluid" style="padding-top: 1.5em">
 	<div class="well titlebar image" style="background-image: url({{background}})">
-		<span class="borilliam-title" ><span class="the">The</span><br>&nbsp;&nbsp;Borilliam</span>
+		<span class="the">The</span><br><span>&nbsp;&nbsp;{{settings.site.title}}</span>
 		<div class="login-tools" style="padding-top: 20px">
 			<div>
 				{{> currentUserImage}}
@@ -94,7 +89,7 @@ We are in the {{roomName}}.<br>
 		</div>
 		<div class="tools">
 			<button class="take-btn btn btn-small btn-info">
-				<i class="icon-white icon-upload"></i>
+				Take <i class="icon-white icon-upload"></i>
 			</button>
 		</div>
 		<div class="clearfix"></div>
@@ -124,7 +119,7 @@ We are in the {{roomName}}.<br>
 	{{#ifMine this}}
 	<div class="tools">
 		<button class="drop-btn btn btn-small btn-info">
-			<i class="icon-white icon-download"></i>
+			Drop <i class="icon-white icon-download"></i>
 		</button>
 	</div>
 	{{/ifMine}}
@@ -276,4 +271,16 @@ We are in the {{roomName}}.<br>
 		</div>
 	</div>
 </li>
+</template>
+
+<template name="scripts">
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	ga('create', '{{settings.google.analytics.apiKey}}', '{{settings.site.domain}}');
+	ga('send', 'pageview');
+
+</script>
 </template>
