@@ -34,7 +34,6 @@ Globals = new Meteor.Collection 'globals'
       value: value
       timestamp: Date.now()
     return
-  
 
 findThing = (things, name) ->
   if not name
@@ -395,6 +394,17 @@ if Meteor.isClient
       
 
 if Meteor.isServer
+  Meteor.Router.add '/boris/:state', (state) ->
+    if state == 'in'
+      setGlobal 'boris', true
+    if state == 'out'
+      setGlobal 'boris', false
+  Meteor.Router.add '/boris', () ->
+    if getGlobal('boris')
+      return "boris is here"
+    else
+      return "boris is not here"
+
   collectWeatherReport = ->
     # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
     weather_api_url = 'http://api.wunderground.com/api/8389a57897d1480d/conditions/q/CA/San_Francisco.json'
