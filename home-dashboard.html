@@ -38,16 +38,20 @@
 		</div>
 		<div class="span9">
 			{{#if currentUser}}
-			{{> room}}
-			{{> send-message}}
-			{{> items}}
-			{{#if messages_ready}}
-				{{> messages}}
+				{{> room}}
+				{{> send-message}}
+				{{> items}}
+				{{#if messages_ready}}
+					{{> messages}}
+				{{else}}
+					<div class="loading">Loading messages...</div>
+				{{/if}}
 			{{else}}
-				<div class="loading">Loading messages...</div>
-			{{/if}}
-			{{else}}
-			You are not logged in.
+				{{#if loggingIn}}
+					Logging in...
+				{{else}}
+					You are not logged in.
+				{{/if}}
 			{{/if}}
 		</div>
 	</div>

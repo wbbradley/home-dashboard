@@ -436,7 +436,7 @@ if Meteor.isServer
       return "boris is not here"
 
   @throwPermissionDenied = ->
-    throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain? or '<domain>'} is not open to the public. Please contact your host for an invitation."
+    throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
   Meteor.methods
     sendEmail: (to, from, subject, text) ->
