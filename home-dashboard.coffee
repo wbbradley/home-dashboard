@@ -21,28 +21,27 @@ subscribeList =
   global = Globals.findOne {name: name}
   if global
     return global.value
-  else if Meteor.user() and _default
-    Globals.insert
-      name: name
-      value: _default
-      timestamp: Date.now()
+  else
+    if typeof(_default) is 'function'
+      _default = _default()
     return _default
 
-@setGlobal = (name, value) ->
+@upsertGlobal = (name, value) ->
+  console.log "globals - upserting #{name}"
+  console.log value
   global = Globals.findOne {name: name}
   if global
     Globals.update {_id: global._id},
       $set:
-        value: value
+        value: _.extend global.value or {}, value
         timestamp: Date.now()
-    return
   else
     Globals.insert
       name: name
       value: value
       timestamp: Date.now()
     return
-
+  
 findThing = (things, name) ->
   if not name
     throw new Error 'No name passed to findRoom'
@@ -54,10 +53,9 @@ findRoom = (name) ->
 findItem = (name) ->
   findThing Items, name
 
+##################################################################
 if Meteor.isClient
-  # Accounts.ui.config
-  #   requestPermissions:
-  #     facebook: ['rsvp_event']
+  document.title = Meteor.settings.public.title
 
   dumpColl = (coll) ->
     coll.find().forEach (item) ->
@@ -96,9 +94,18 @@ if Meteor.isClient
       ret = 'just now'
     ret
 
+  makeMeme = (_id) ->
+    Messages.update {_id: _id},
+      $set:
+        meme: true
+        memeTitle: 'title'
+        memeSubtitle: 'subtitle'
+
   Template.body.helpers
     background: ->
-      @getGlobal 'background', ''
+      (@getGlobal 'background') or ''
+    messages_ready: ->
+      subscriptions.messages.ready()
 
   Template['user-item'].helpers
     ifMine: (context, options) ->
@@ -124,11 +131,7 @@ if Meteor.isClient
       Messages.update {_id: @_id},
         $set: {deleted: true}
     'click .meme-btn': () ->
-      Messages.update {_id: @_id},
-        $set:
-          meme: true
-          memeTitle: 'title'
-          memeSubtitle: 'subtitle'
+      makeMeme @_id
     'click .love-btn': () ->
       if Meteor.user()?._id?
         log 'info', "#{Meteor.user().profile.name} liked a post"
@@ -379,6 +382,17 @@ if Meteor.isClient
             authorId: Meteor.user()._id
             roomId: currentRoom._id
 
+        memeIndex = msg.indexOf('/meme ')
+        if memeIndex >= 0
+          Messages.insert
+            imageUrl: msg.substr(memeIndex + 6)
+            timestamp: Date.now()
+            authorId: Meteor.user()._id
+            roomId: currentRoom._id
+            meme: true
+            memeTitle: 'title'
+            memeSubtitle: 'subtitle'
+
         youtubeIndex = msg.indexOf('/youtube ')
         if youtubeIndex >= 0
           Messages.insert
@@ -402,14 +416,12 @@ if Meteor.isClient
     'click input[name=send]' : ->
       captureAndSendMessage()
 
-  Deps.autorun ->
-    user = Meteor.user()
-    if user
-      for name, template of Template
-        template.settings = getGlobal 'settings'
+  for name, template of Template
+    template.settings = Meteor.settings.public
 
+  @subscriptions = {}
   for name, collection of subscribeList
-    Meteor.subscribe name
+    @subscriptions[name] = Meteor.subscribe name
 
 if Meteor.isServer
   Meteor.Router.add '/boris/:state', (state) ->
@@ -424,21 +436,43 @@ if Meteor.isServer
       return "boris is not here"
 
   @throwPermissionDenied = ->
-    throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.site.domain} is not open to the public. Please contact your host for an invitation."
+    throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain? or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
-  Meteor.settings.site.whitelist = ([].concat Meteor.settings.site.whitelist).sort()
+  Meteor.methods
+    sendEmail: (to, from, subject, text) ->
+      check([to, from, subject, text], [String])
+
+      # Let other method calls from the same client start running,
+      # without waiting for the email sending to complete.
+      @unblock()
+
+      Email.send
+        to: to
+        from: from
+        subject: subject
+        text: text
+
+  settings = Meteor.settings.private
+  for list_name of settings.whitelist
+    settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
 
   endsWith = (string, suffix) ->
       string.indexOf(suffix, string.length - suffix.length) isnt -1
 
   validUserByEmail = (user) ->
-    email = user?.services?.google?.email
+    settings = Meteor.settings.private
+    email = user?.services?.google?.email or user?.services?.facebook?.email
+    twitter = user?.services?.twitter?.screenName
     if email
-      if endsWith email, "@#{Meteor.settings.site.domain}"
+      if endsWith email, "@#{Meteor.settings.private?.domain}"
         return true
-      if _.indexOf(Meteor.settings.site.whitelist, email, true) isnt -1
+      if _.indexOf(settings.whitelist.emails, email, true) isnt -1
         return true
-    console.log "validUserByEmail : info : denied \"#{email}\""
+    if twitter
+      if _.indexOf(settings.whitelist.twitter, twitter, true) isnt -1
+        return true
+
+    console.log "validUserByEmail : info : denied \"#{email or twitter}\""
     return false
 
   # Setup security features
@@ -472,11 +506,9 @@ if Meteor.isServer
       return true
     do @throwPermissionDenied
 
-  @setGlobal 'settings', Meteor.settings
-
   collectWeatherReport = ->
     # http://www.wunderground.com/weather/api/d/docs?d=data/conditions
-    weather_api_url = Meteor.settings.weather.url
+    weather_api_url = Meteor.settings.private.weather.url
     Meteor.http.get weather_api_url, (error, result) ->
       if result?.data?
         WeatherReports.insert result.data.current_observation, (obj, _id) ->
@@ -484,10 +516,12 @@ if Meteor.isServer
           WeatherReports.remove _id: $ne: _id
 
   Meteor.startup ->
-    if not Meteor.settings?.site?.title
+    Globals.remove {name: 'settings'}
+    Globals.remove {name: 'background'}
+    if not Meteor.settings.public?.title
       throw new Error "Settings are uninitialized."
-    console.log "Starting #{Meteor.settings.site.title}"
-    if Meteor.settings.weather
+    console.log "Starting #{Meteor.settings.public.title}"
+    if Meteor.settings.private?.weather
       collectWeatherReport()
       Meteor.setInterval collectWeatherReport, 5 * 60 * 1000
 
@@ -505,4 +539,5 @@ if Meteor.isServer
 @Messages = Messages
 @WeatherReports = WeatherReports
 @formatDate = formatDate
+@makeMeme = makeMeme
 @dumpColl = dumpColl

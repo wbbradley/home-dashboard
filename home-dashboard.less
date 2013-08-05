@@ -231,6 +231,7 @@ a.assign {
 	color: white;
 	-webkit-text-stroke: 2px black;
 	font-family: 'Impact', sans-serif;
+	font-weight: bolder;
 }
 
 .meme-container .inner {
@@ -269,13 +270,19 @@ a.assign {
 }
 
 /* Workaround padding issue on iPhone */
-@media (max-width: 767px) {
+@media (max-width: 867px) {
 	body {
 		padding-right: 0;
 		padding-left: 0;
 	}
 	.hidden-mobile {
 		display: none;
+	}
+	.meme-container {
+		max-width: 200px;
+		max-height: 200px;
+		width: 200px;
+		height: 200px;
 	}
 }
 

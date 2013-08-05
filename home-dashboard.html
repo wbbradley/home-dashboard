@@ -20,14 +20,10 @@
 </body>
 
 <template name="body">
-<script>
-	document.title = '{{settings.site.title}}';
-</script>
-
 <div class="container-fluid" style="padding-top: 1.5em">
 	<div class="well titlebar image" style="background-image: url({{background}})">
-		<span class="the">The</span><br><span>&nbsp;&nbsp;{{settings.site.title}}</span>
-		<div class="login-tools" style="padding-top: 20px">
+		<span class="the">The</span><br><span class="site-title">&nbsp;&nbsp;{{settings.title}}</span>
+		<div class="login-tools">
 			<div>
 				{{> currentUserImage}}
 			</div>
@@ -45,7 +41,11 @@
 			{{> room}}
 			{{> send-message}}
 			{{> items}}
-			{{> messages}}
+			{{#if messages_ready}}
+				{{> messages}}
+			{{else}}
+				<div class="loading">Loading messages...</div>
+			{{/if}}
 			{{else}}
 			You are not logged in.
 			{{/if}}
@@ -178,7 +178,7 @@ We are in the {{roomName}}.<br>
 {{#if currentUser}}
 	<form onsubmit="event.preventDefault();" class="form-horizontal">
 		<input type="text" style="width:50%" name="new-message"></input>
-		<input class="btn btn-primary" type="button" name="send" value="Mentum"></input>
+		<input class="btn btn-primary" type="button" name="send" value="Send"></input>
 	</form>
 {{/if}}
 </template>
@@ -279,7 +279,7 @@ We are in the {{roomName}}.<br>
 		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-	ga('create', '{{settings.google.analytics.apiKey}}', '{{settings.site.domain}}');
+	ga('create', '{{settings.google.analytics.apiKey}}', '{{settings.domain}}');
 	ga('send', 'pageview');
 
 </script>

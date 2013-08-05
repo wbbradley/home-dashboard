@@ -13,4 +13,6 @@ accounts-ui
 backbone
 less
 appcache
-force-ssl
+accounts-facebook
+facebook
+accounts-twitter
