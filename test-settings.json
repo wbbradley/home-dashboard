@@ -1,11 +1,18 @@
 {
-	"site": {
-		"title": "The Locilliam",
-		"domain": "gmail.com",
+	"public": {
+		"title": "Locilliam",
+		"domain": "localhost",
+		"google": {
+			"analytics": {
+				"apiKey": "xxxxx"
+			}
+		}
 	},
-	"google": {
-		"analytics": {
-			"apiKey": "xxxxx"
+	"private": {
+		"domain": "gmail.com",
+		"whitelist": {
+			"emails": [
+			]
 		}
 	}
 }

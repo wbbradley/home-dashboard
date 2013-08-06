@@ -1,3 +1,13 @@
+@default_settings =
+  private:
+    domain: "gmail.com"
+    whitelist:
+      emails: []
+      twitter: ['wbbradley']
+  public:
+    title: "Home Dashboard"
+    pageSize: 10
+
 log = (level, msg) ->
   if typeof console != 'undefined'
     console.log "home-dashboard : #{level} : #{msg}"
@@ -61,11 +71,41 @@ userEmailAddress = (user) ->
 
 ##################################################################
 if Meteor.isClient
-  document.title = Meteor.settings.public.title
+  Meteor.settings = Meteor.settings or {}
+  Meteor.settings.public = _.defaults Meteor.settings.public or {}, default_settings.public
+  Session.set 'pageSize', Meteor.settings.public.pageSize
+  Session.set 'skipAhead', 0
 
+  document.title = Meteor.settings.public.title
+  $(=>
+    document.body.innerHTML = "<div id='debug'></div>"
+    Deps.autorun =>
+      if Session.get('debug')
+        # or Meteor.user()?.profile.name is 'William Bradley'
+        dbg = document.getElementById 'debug'
+        if dbg
+          innerHTML = "<div class='well debug'>window.screen = #{JSON.stringify window.screen}<br/>"
+          innerHTML += "document.width = #{document.width}<br>"
+          innerHTML += "document.height = #{document.height}"
+          innerHTML += "</div>"
+
+          dbg.innerHTML = innerHTML
+      return
+  )
   dumpColl = (coll) ->
     coll.find().forEach (item) ->
       console.log item
+
+  showNewerMessages = ->
+    newSkip = Session.get('skipAhead') - Session.get('pageSize')
+    if newSkip < 0
+      newSkip = 0
+    Session.set 'skipAhead', newSkip
+    smoothScroll 'messages'
+
+  showOlderMessages = ->
+    Session.set 'skipAhead', Session.get('skipAhead') + Session.get('pageSize')
+    smoothScroll 'messages'
 
   append_time_unit = (diff, unit_name, unit, ret) ->
     if diff > unit
@@ -161,6 +201,12 @@ if Meteor.isClient
     return unknown
 
   Template.message.helpers
+    withAuthor: (userId, options) ->
+      author = Meteor.users.findOne {_id: userId}, {sort: {timestamp: -1}}
+      authorContext =
+        name: author.profile.name
+        image: getUserImage userId
+      return options.fn authorContext
     ifNotLoved: (context, options) ->
       userLoveIds = @['userLoveIds'] or []
       if userLoveIds.indexOf(Meteor.user()._id) is -1
@@ -222,12 +268,28 @@ if Meteor.isClient
     else
       return "#{room.name}"
 
-  Template.messages.messages = ->
-    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
-    if not currentRoom
-      return []
-    Messages.find {roomId: currentRoom._id, deleted: null},
-      {sort: {timestamp: -1}}
+  Deps.autorun ->
+    Template.messages.messages = ->
+      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+      if not currentRoom
+        return []
+      findCriteria =
+        roomId: currentRoom._id
+        deleted: null
+      cursor_count = Messages.find findCriteria, {sort: {timestamp: -1}}
+      queryParams =
+        sort: timestamp: -1
+        limit: Session.get('pageSize')
+        skip: Session.get('skipAhead')
+      cursor = Messages.find findCriteria, queryParams
+      Template.messages.messageCount = cursor_count.count()
+      return cursor
+
+  Template.messages.newerMessagesExist = ->
+    Template.messages.messageCount > 0 and Session.get('skipAhead') > 0
+
+  Template.messages.olderMessagesExist = ->
+    Template.messages.messageCount > Session.get('pageSize') + Session.get('skipAhead')
 
   Template['user-items'].events
     'click .drop-btn': () ->
@@ -256,13 +318,10 @@ if Meteor.isClient
     else
       ''
 
-  Template.room.room = ->
-    Rooms.findOne {}, {sort: {timestamp: -1}}
-
-  Template.room.roomName = ->
+  Template.body.roomName = ->
     room = Rooms.findOne {}, {sort: {timestamp: -1}}
     if not room
-      return 'VOID'
+      return ''
     if room.lcname is 'lobby'
       return 'lobby'
     else
@@ -271,7 +330,7 @@ if Meteor.isClient
   @balanceText = (event) ->
     $(event.target).parent().textfill
       maxFontPixels: 80
-      maxWidth: $(event.target).parents('.meme-container').width()
+      maxWidth: $(event.target).parents('.meme-container').width() - 40
 
   @updateMeme = (_id) ->
     title = $("#meme-#{_id}-title")[0]?.innerHTML or ''
@@ -285,7 +344,7 @@ if Meteor.isClient
 
   Template.memeDisplay.rendered = Template.memificator.rendered = ->
     $firstNode = $(@firstNode)
-    maxWidth = $firstNode.width()
+    maxWidth = $firstNode.width() - 40
     $firstNode.find('.meme-text').each ->
       $(@).parent().textfill
         maxFontPixels: 80
@@ -423,7 +482,7 @@ if Meteor.isClient
         captureAndSendMessage()
         return false
       return
-    'click input[name=send]' : ->
+    'click [name=send]' : ->
       captureAndSendMessage()
 
   for name, template of Template
@@ -434,16 +493,18 @@ if Meteor.isClient
     @subscriptions[name] = Meteor.subscribe name
 
 if Meteor.isServer
+  """
   Meteor.Router.add '/boris/:state', (state) ->
-    if state == 'in'
+    if state is 'in'
       upsertGlobal 'boris', true
-    if state == 'out'
+    if state is 'out'
       upsertGlobal 'boris', false
   Meteor.Router.add '/boris', () ->
     if getGlobal('boris')
       return "boris is here"
     else
       return "boris is not here"
+  """
 
   @throwPermissionDenied = ->
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
@@ -462,7 +523,9 @@ if Meteor.isServer
         subject: subject
         text: text
 
+  Meteor.settings = _.defaults Meteor.settings, default_settings
   settings = Meteor.settings.private
+
   for list_name of settings.whitelist
     settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
 
@@ -526,8 +589,6 @@ if Meteor.isServer
           WeatherReports.remove _id: $ne: _id
 
   Meteor.startup ->
-    Globals.remove {name: 'settings'}
-    Globals.remove {name: 'background'}
     if not Meteor.settings.public?.title
       throw new Error "Settings are uninitialized."
     console.log "Starting #{Meteor.settings.public.title}"
@@ -547,8 +608,11 @@ if Meteor.isServer
 @Rooms = Rooms
 @Items = Items
 @Messages = Messages
+@Globals = Globals
 @WeatherReports = WeatherReports
 @formatDate = formatDate
 @makeMeme = makeMeme
 @dumpColl = dumpColl
 @userEmailAddress = userEmailAddress
+@showNewerMessages = showNewerMessages
+@showOlderMessages = showOlderMessages
