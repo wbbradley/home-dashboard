@@ -103,9 +103,6 @@ body, html {
 }
 
 .room-item .tools {
-	position: absolute;
-	top: 10px;
-	right: 10px;
 	z-index: 1;
 	margin-top: 10px;
 }
@@ -155,12 +152,17 @@ body, html {
 }
 
 .room-item {
+	display: inline-block;
 	position: relative;
 	margin: 0px 0px 1px 0px;
 	background-color: #f0f0f0;
 	border: 1px solid #ccc;
-	max-width: 300px;
+	width: 162px;
+	height: 96px;
+	max-width: 162px;
+	max-height: 96px;
 	padding: 20px;
+	float: left;
 
    	.image {
 		.item-size;
@@ -188,6 +190,7 @@ a.assign {
 
 .room-item .name {
 	min-width: 100px;
+	text-overflow: ellipsis-word;
 }
 
 .user {

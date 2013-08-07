@@ -31,9 +31,12 @@ subscribeList =
   console.log value
   global = Globals.findOne {name: name}
   if global
+    if typeof(value) is 'object'
+      if typeof(global.value) is 'object'
+        value = _.extend global.value, value
     Globals.update {_id: global._id},
       $set:
-        value: _.extend global.value or {}, value
+        value: value
         timestamp: Date.now()
   else
     Globals.insert
