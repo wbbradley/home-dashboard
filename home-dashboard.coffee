@@ -429,9 +429,9 @@ if Meteor.isClient
 if Meteor.isServer
   Meteor.Router.add '/boris/:state', (state) ->
     if state == 'in'
-      setGlobal 'boris', true
+      upsertGlobal 'boris', true
     if state == 'out'
-      setGlobal 'boris', false
+      upsertGlobal 'boris', false
   Meteor.Router.add '/boris', () ->
     if getGlobal('boris')
       return "boris is here"
