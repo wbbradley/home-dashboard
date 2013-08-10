@@ -56,6 +56,9 @@ findRoom = (name) ->
 findItem = (name) ->
   findThing Items, name
 
+userEmailAddress = (user) ->
+  return user?.services?.google?.email or user?.services?.facebook?.email
+
 ##################################################################
 if Meteor.isClient
   document.title = Meteor.settings.public.title
@@ -141,16 +144,20 @@ if Meteor.isClient
         Messages.update {_id: @_id},
           $addToSet: {userLoveIds: Meteor.user()._id}
 
-  @getUserImage  = (authorId) ->
+  @getUserImage = (authorId) ->
     author = Meteor.users.findOne {_id:authorId}
     unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
-    if author?.services?
-      if author.services.twitter
-        return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
-      else if author.services.google
-        return author.services.google.picture or unknown
-      else if author.services.facebook
-        return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
+    if author
+      if author.services?
+        if author.services.twitter
+          return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
+        else if author.services.google
+          return author.services.google.picture or unknown
+        else if author.services.facebook
+          return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
+      email = userEmailAddress author
+      if email
+        return "http://www.gravatar.com/avatar/#{md5(email.toLowerCase())}?s=150"
     return unknown
 
   Template.message.helpers
@@ -464,7 +471,7 @@ if Meteor.isServer
 
   validUserByEmail = (user) ->
     settings = Meteor.settings.private
-    email = user?.services?.google?.email or user?.services?.facebook?.email
+    email = userEmailAddress user
     twitter = user?.services?.twitter?.screenName
     if email
       if endsWith email, "@#{Meteor.settings.private?.domain}"
@@ -544,3 +551,4 @@ if Meteor.isServer
 @formatDate = formatDate
 @makeMeme = makeMeme
 @dumpColl = dumpColl
+@userEmailAddress = userEmailAddress
