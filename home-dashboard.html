@@ -1,7 +1,6 @@
 <head>
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
-	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
 	<script>
 		function redisplayDiffTimes() {
 			$('span[data-time]').each(function (index, value) {
@@ -65,96 +64,12 @@
 </div>
 </template>
 
-<template name="items">
-<div class="room-items">
-	{{#each items}}
-	<div class="room-item">
-			{{#if imageUrl}}
-			<div class="image pull-left" style="background-image:url({{imageUrl}})">
-			</div>
-			{{else}}
-			<div class="image pull-left">
-				<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
-			</div>
-			{{/if}}
-		<div class="name">
-			{{name}}
-		</div>
-		<nav>
-			<button class="take-btn btn btn-mini btn-info">
-				<i class="icon-white icon-upload"></i>
-			</button>
-		</nav>
-		<div class="clearfix"></div>
-	</div>
-{{else}}
-	There are no items in this room.
-	{{/each}}
-	<div class="clearfix"></div>
-</div>
-</template>
-
 <template name="currentUserImage">
 {{#if currentUser}}
 <div class="current-user">
 	<div class="image" style="background-image:url({{imageUrl}})"></div>
 </div>
 {{/if}}
-</template>
-
-<template name="user-item">
-<div class="user-item">
-	{{#if imageUrl}}
-	<div class="item image" style="background-image:url({{imageUrl}})"></div>
-	{{else}}
-	<div class="pull-left">
-		<a class="assign" href="javascript:getItemImage('{{_id}}')">...</a>
-	</div>
-	{{/if}}
-
-	{{#ifMine this}}
-	<nav>
-		<button class="drop-btn btn btn-small btn-info">
-			Drop <i class="icon-white icon-download"></i>
-		</button>
-	</nav>
-	{{/ifMine}}
-
-	<div class="name">
-		{{name}}
-	</div>
-	<div class="clearfix"></div>
-</div>
-</template>
-
-<template name="user-items">
-<div class="user-items">
-	{{#each items}}
-		{{> user-item}}
-	{{/each}}
-</div>
-</template>
-
-<template name="user">
-<div class="user">
-	<div class="avatar image" style="background-image: url({{imageUrl}})"></div>
-	<div class="user-info">
-		{{profile.name}}
-	</div>
-	<div class="clearfix">
-	</div>
-	{{> user-items}}
-</div>
-</template>
-
-<template name="users">
-<div class="users">
-	{{#each users}}
-		{{> user}}
-	{{else}}
-		No users.
-	{{/each}}
-</div>
 </template>
 
 <template name="messages">
@@ -254,9 +169,7 @@
 			<img src="{{imageUrl}}" />
 		{{/if}}
 		{{#if youtube}}
-			<iframe id="ytplayer" type="text/html" width="400" height="244"
-				src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com"
-				frameborder="0"></iframe>
+			<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
 		{{/if}}
 	{{/if}}
 	<div>

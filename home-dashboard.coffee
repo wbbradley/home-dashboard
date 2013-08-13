@@ -78,21 +78,6 @@ if Meteor.isClient
   Session.set 'skipAhead', 0
 
   document.title = Meteor.settings.public.title
-  $(=>
-    document.body.innerHTML = "<div id='debug'></div>"
-    Deps.autorun =>
-      if Session.get('debug')
-        # or Meteor.user()?.profile.name is 'William Bradley'
-        dbg = document.getElementById 'debug'
-        if dbg
-          innerHTML = "<div class='well debug'>window.screen = #{JSON.stringify window.screen}<br/>"
-          innerHTML += "document.width = #{document.width}<br>"
-          innerHTML += "document.height = #{document.height}"
-          innerHTML += "</div>"
-
-          dbg.innerHTML = innerHTML
-      return
-  )
   dumpColl = (coll) ->
     coll.find().forEach (item) ->
       console.log item
@@ -153,18 +138,6 @@ if Meteor.isClient
       (@getGlobal 'background') or ''
     messages_ready: ->
       subscriptions.messages.ready()
-
-  Template['user-item'].helpers
-    ifMine: (context, options) ->
-      if Meteor.user()?._id is @holderId
-        return options.fn @
-      else
-        return options.inverse @
-
-  Template['user-items'].helpers
-    items: ->
-      console.log "Fetching items for user #{@_id}"
-      Items.find {holderId: @_id}, {sort: {timestamp: -1}}
 
   Template.message.helpers
     'date-render': (timestamp) ->
@@ -238,9 +211,6 @@ if Meteor.isClient
       msg
 
 
-  Template['weather-report'].weather = ->
-    WeatherReports.findOne {}, {sort: {local_epoch: -1}}
-
   Template.messages.helpers
     eachItem: (context, options) ->
       currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -291,27 +261,6 @@ if Meteor.isClient
 
   Template.messages.olderMessagesExist = ->
     Template.messages.messageCount > Session.get('pageSize') + Session.get('skipAhead')
-
-  Template['user-items'].events
-    'click .drop-btn': () ->
-      placeItem @name
-
-  Template.items.events
-    'click .take-btn': () ->
-      takeItem @name
-
-  Template.items.items = ->
-    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
-    if not currentRoom
-      return []
-    Items.find {roomId: currentRoom._id},
-      {sort: {timestamp: -1}}
-
-  Template.users.users = ->
-    Meteor.users.find {}, {sort: {'profile.name': 1}}
-
-  Template.user.imageUrl = ->
-    getUserImage @_id
 
   Template.currentUserImage.imageUrl = ->
     if Meteor.user()
