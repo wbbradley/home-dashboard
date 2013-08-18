@@ -30,6 +30,9 @@
 	<section id="send-message">
 		{{> send-message}}
 	</section>
+	<section id="upload-photo">
+		{{> upload-photo}}
+	</section>
 		{{> messages}}
 {{else}}
 	{{#if loggingIn}}
@@ -180,6 +183,16 @@
 		<input type="text" style="width:50%" name="new-message"></input>
 		<button name="send">Send</button>
 	</form>
+{{/if}}
+</template>
+
+<template name="upload-photo">
+{{#if currentUser}}
+<form action="http://somebucket.amazonaws.com/" method="post" enctype="multipart/form-data" id="aws-upload">
+	<input type="file" name="file" id="aws-file">
+	<input type="hidden" name="policy">
+	<input type="submit" name="submit" id="btn-submit">
+</form>
 {{/if}}
 </template>
 

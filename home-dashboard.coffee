@@ -26,6 +26,8 @@ subscribeList =
   'weather_reports': WeatherReports
   'globals': Globals
 
+@S3ReqUrl = "/s3req"
+
 @getGlobal = (name, _default) ->
   _default or= null
   global = Globals.findOne {name: name}
@@ -37,8 +39,6 @@ subscribeList =
     return _default
 
 @upsertGlobal = (name, value) ->
-  console.log "globals - upserting #{name}"
-  console.log value
   global = Globals.findOne {name: name}
   if global
     if typeof(value) is 'object'
@@ -92,9 +92,13 @@ if Meteor.isClient
           dbg.innerHTML = innerHTML
       return
   )
+
+  dumpCursor = (cursor) ->
+      cursor.forEach (item) ->
+        console.log item
+
   dumpColl = (coll) ->
-    coll.find().forEach (item) ->
-      console.log item
+    dumpCursor coll.find()
 
   showNewerMessages = ->
     newSkip = Session.get('skipAhead') - Session.get('pageSize')
@@ -152,6 +156,18 @@ if Meteor.isClient
       (@getGlobal 'background') or ''
     messages_ready: ->
       subscriptions.messages.ready()
+
+  getS3ReqUrl = (fileName) ->
+    encodedFileName = fileName.replace(/.+[\\\/]/, "")
+    return "#{S3ReqUrl}/#{encodeURIComponent(encodedFileName)}"
+
+  Template['upload-photo'].events
+    'change #aws-upload': (event) ->
+      event.preventDefault()
+      file = document.getElementById('aws-file')
+      fileName = file.files[0].name
+      Meteor.http.get getS3ReqUrl(fileName), (error, result) ->
+        console.log result
 
   Template['user-item'].helpers
     ifMine: (context, options) ->
@@ -493,18 +509,37 @@ if Meteor.isClient
     @subscriptions[name] = Meteor.subscribe name
 
 if Meteor.isServer
-  """
+  debugger
+  path = Npm.require 'path'
+  fs = Npm.require 'fs'
+  base = path.resolve '.'
+  isBundle = fs.existsSync base + '/bundle'
+  require = (moduleName) ->
+    modulePath = base + (if isBundle then '/bundle/static' else '/public') + '/node_modules'
+    console.log modulePath
+    Npm.require(modulePath + '/' + moduleName)
+    
+  crypto = require "crypto"
+  console.log crypto.createHmac('sha1', 'secretkey').update('policy').digest('base64')
+
   Meteor.Router.add '/boris/:state', (state) ->
     if state is 'in'
       upsertGlobal 'boris', true
     if state is 'out'
       upsertGlobal 'boris', false
+
   Meteor.Router.add '/boris', () ->
     if getGlobal('boris')
       return "boris is here"
     else
       return "boris is not here"
-  """
+
+  Meteor.Router.add "#{S3ReqUrl}/:filename", (filename) ->
+    return [
+      200
+      {'Content-type': 'application/json'}
+      JSON.stringify {filename: filename}
+    ]
 
   @throwPermissionDenied = ->
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
@@ -613,6 +648,8 @@ if Meteor.isServer
 @formatDate = formatDate
 @makeMeme = makeMeme
 @dumpColl = dumpColl
+@dumpCursor = dumpCursor
 @userEmailAddress = userEmailAddress
 @showNewerMessages = showNewerMessages
 @showOlderMessages = showOlderMessages
+@getS3ReqUrl = getS3ReqUrl
