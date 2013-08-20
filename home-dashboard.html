@@ -24,6 +24,11 @@
 		<div class="login-tools">
 			{{loginButtons}}
 		</div>
+		{{#if currentUser}}
+			{{#with karma}}
+				<span class="karma">You have {{ points }} heart point(s).</span>
+			{{/with}}
+		{{/if}}
 		<div class="clearfix"></div>
 	</header>
 	{{#if messages_ready}}
@@ -156,7 +161,7 @@
 {{#if messages}}
 	<section id="messages">
 		{{#if newerMessagesExist}}
-		<nav>
+		<nav paging>
 			<button onclick="javascript:showNewerMessages()">Show newer messages</button>
 		</nav>
 		{{/if}}
@@ -164,7 +169,7 @@
 			{{> message}}
 		{{/each}}
 		{{#if olderMessagesExist}}
-		<nav>
+		<nav paging>
 			<button onclick="javascript:showOlderMessages()">Show older messages</button>
 		</nav>
 		{{/if}}

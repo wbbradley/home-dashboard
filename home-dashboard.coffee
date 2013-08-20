@@ -6,6 +6,7 @@
       twitter: ['wbbradley']
   public:
     title: "Home Dashboard"
+    karma: true
     pageSize: 10
 
 log = (level, msg) ->
@@ -485,8 +486,23 @@ if Meteor.isClient
     'click [name=send]' : ->
       captureAndSendMessage()
 
+  karmaCalc = () ->
+    points = 0
+    if Meteor.user()
+      userId = Meteor.user()._id
+      findCriteria =
+        authorId: userId
+        deleted: $ne: true
+      cursor = Messages.find findCriteria
+      cursor.forEach (message) ->
+        if message.userLoveIds?
+          points += message.userLoveIds.length
+    return points: points
+
   for name, template of Template
     template.settings = Meteor.settings.public
+    if Meteor.settings.public.karma is true
+      template.karma = karmaCalc
 
   @subscriptions = {}
   for name, collection of subscribeList

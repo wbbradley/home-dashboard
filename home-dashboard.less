@@ -11,7 +11,7 @@
 @body-font-weight: 400;
 @body-font-color: #3f5765;
 
-@default-bg-col: #cccccc;
+@default-bg-col: @bright-white;
 @translucent-bg-col: fadeout(@dark-bg-col, 40%);
 @dark-bg-col: #444;
 @medium-bg-col: #666;
@@ -289,6 +289,11 @@ section {
 			&>button {
 				display: inline-block;
 				text-align: center;
+			}
+			&[paging] {
+				&>button {
+					margin: 20px auto;
+				}
 			}
 		}
 	}
