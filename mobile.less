@@ -1,0 +1,50 @@
+@iphone-width: 320px;
+@iphone-class-max-width: 480px;
+@ipad-class-max-width: 768px;
+
+@iphone: ~'(max-width:' @iphone-class-max-width ~')';
+@above-iphone: ~'(min-width:' (@iphone-class-max-width + 1px) ~')';
+@ipad: ~'(max-width:' @ipad-class-max-width ~')';
+@above-ipad: ~'(min-width:' (@ipad-class-max-width + 1px) ~')';
+
+.visible-iphone () {
+	display: none;
+	@media @iphone {
+		display: inherit;
+	}
+}
+
+[iphone] {
+	.visible-iphone;
+}
+
+.above-iphone () {
+	display: none;
+	@media @above-iphone {
+		display: inherit;
+	}
+}
+
+[above-iphone] {
+	.above-iphone;
+}
+
+.width-to-device-width (@default-width) {
+	.box-sizing(border-box);
+
+	width: @default-width;
+	max-width: @default-width;
+
+	// TODO: handle iPad
+	@media @iphone {
+		width: @iphone-width;
+		max-width: @iphone-width;
+	}
+}
+
+@-webkit-viewport{width:device-width}
+@-moz-viewport{width:device-width}
+@-ms-viewport{width:device-width}
+@-o-viewport{width:device-width}
+@viewport{width:device-width}
+
