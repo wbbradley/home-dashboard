@@ -14,6 +14,7 @@ log = (level, msg) ->
     console.log "home-dashboard : #{level} : #{msg}"
 
 Messages = new Meteor.Collection 'messages'
+Comments = new Meteor.Collection 'comments'
 Rooms = new Meteor.Collection 'rooms'
 Items = new Meteor.Collection 'items'
 WeatherReports = new Meteor.Collection 'weather_reports'
@@ -22,6 +23,7 @@ Globals = new Meteor.Collection 'globals'
 subscribeList =
   'users': Meteor.users
   'messages': Messages
+  'comments': Comments
   'rooms': Rooms
   'items': Items
   'weather_reports': WeatherReports
@@ -144,12 +146,22 @@ if Meteor.isClient
       formatDate(timestamp)
 
   Template.message.author = ->
-      Meteor.users.findOne {_id:@authorId}
+    Meteor.users.findOne {_id:@authorId}
+
+  Template.message.comments = ->
+    Comments.find {msgId: @_id}, {sort: {timestamp: 1}}
 
   Template.message.events
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
+    'click .comment-btn': () ->
+      text = $(event.target).closest('nav.comment').find('input[type=text]').val()
+      Comments.insert
+        text: text
+        msgId: @_id
+        authorId: Meteor.user()._id
+        timestamp: Date.now()
     'click .meme-btn': () ->
       makeMeme @_id
     'click .love-btn': () ->
@@ -173,6 +185,10 @@ if Meteor.isClient
       if email
         return "http://www.gravatar.com/avatar/#{md5(email.toLowerCase())}?s=150"
     return unknown
+
+  @getUserName = (authorId) ->
+    author = Meteor.users.findOne {_id:authorId}
+    return author.profile.name or 'Unknown'
 
   Template.message.helpers
     withAuthor: (userId, options) ->
@@ -205,6 +221,9 @@ if Meteor.isClient
 
     getAuthorImage: (authorId) ->
       getUserImage authorId
+
+    getAuthorName: (authorId) ->
+      getUserName authorId
 
     say: (msg) ->
       # $.say msg

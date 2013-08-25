@@ -66,9 +66,7 @@
 
 <template name="currentUserImage">
 {{#if currentUser}}
-<div class="current-user">
-	<div class="image" style="background-image:url({{imageUrl}})"></div>
-</div>
+	<div class="author" style="background-image:url({{imageUrl}})"></div>
 {{/if}}
 </template>
 
@@ -76,7 +74,7 @@
 {{#if messages}}
 	<section id="messages">
 		{{#if newerMessagesExist}}
-		<nav paging>
+		<nav class="paging">
 			<button onclick="javascript:showNewerMessages()">Show newer messages</button>
 		</nav>
 		{{/if}}
@@ -84,7 +82,7 @@
 			{{> message}}
 		{{/each}}
 		{{#if olderMessagesExist}}
-		<nav paging>
+		<nav class="paging">
 			<button onclick="javascript:showOlderMessages()">Show older messages</button>
 		</nav>
 		{{/if}}
@@ -147,7 +145,6 @@
 					</button>
 					{{/if}}
 				{{/if}}
-				<button class="delete-btn"><i class="icon-trash"></i></button>
 			{{else}}
 				{{#ifNotLoved this}}
 					<button class="love-btn"><i class="icon-heart"></i></button>
@@ -177,5 +174,17 @@
 			<i class="icon-heart"></i>
 		{{/loveLoop}}
 	</div>
+	{{#each comments}}
+	<div class="comment">
+		<div class="author" style="background-image: url({{ getAuthorImage authorId }})"></div>
+		<div class="name">{{getAuthorName authorId}}</div>
+		<div class="text">{{text}}</div>
+	</div>
+	{{/each}}
+	<nav class="comment">
+		{{> currentUserImage }}
+		<button class="comment-btn"><i class="icon-comment-alt"></i></button>
+		<input type="text" name="text">
+	</nav>
 </div>
 </template>

@@ -228,8 +228,8 @@ body > header {
 @button-hover-col: #3f5765;
 
 button {
+	.box;
 	display: block;
-	padding: 0 1em;
 	height: 1.5em;
 	cursor: pointer;
 	min-height: @control-height;
@@ -242,11 +242,14 @@ button {
 	}
 }
 
+input {
+	border-radius: 0;
+	display: inline-block;
+	min-height: @control-height;
+	height: auto;
+}
+
 form {
-	input {
-		display: inline-block;
-		min-height: @control-height;
-	}
 	button {
 		.box;
 		display: inline-block;
@@ -285,12 +288,12 @@ section {
 	}
 	&#messages {
 		nav {
-			text-align: center;
 			&>button {
 				display: inline-block;
 				text-align: center;
 			}
-			&[paging] {
+			&.paging {
+				text-align: center;
 				&>button {
 					margin: 20px auto;
 				}
@@ -300,6 +303,18 @@ section {
 
 	&#footer {
 		text-align: center;
+	}
+}
+
+.has-author () {
+	.author {
+		float: left;
+		display: inline-block;
+		margin: @mobile-header-image-margin;
+		.image;
+		width: @mobile-author-size;
+		height: @mobile-author-size;
+		z-index: 10;
 	}
 }
 
@@ -326,15 +341,7 @@ section {
 	}
 	position: relative;
 	.box;
-	.author {
-		display: inline-block;
-		margin-top: @mobile-header-image-margin;
-		margin-left: @mobile-header-image-margin;
-		.image;
-		width: @mobile-author-size;
-		height: @mobile-author-size;
-		z-index: 10;
-	}
+	.has-author;
 	.name {
 		font-family: @sans-serif;
 	}
@@ -342,6 +349,25 @@ section {
 		max-width: @mobile-width;
 		width: @mobile-width;
 		height: auto;
+	}
+
+	.comment {
+		.box;
+		padding-left: 20px;
+		.has-author;
+		clear: both;
+		button {
+			float: right;
+			margin: @mobile-header-image-margin;
+		}
+		input {
+			width: 220px;
+		}
+		div& {
+			.name {
+				font-size: 10px;
+			}
+		}
 	}
 }
 
@@ -421,3 +447,4 @@ a.assign {
 		font-weight: bolder;
 	}
 }
+
