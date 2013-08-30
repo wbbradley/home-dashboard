@@ -192,6 +192,8 @@ if Meteor.isClient
     author = Meteor.users.findOne {_id:authorId}
     unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
     if author
+      if author.image
+        return author.image
       if author.services?
         if author.services.twitter
           return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
@@ -610,6 +612,12 @@ if Meteor.isServer
   Meteor.users.deny
     update: () ->
       return true
+
+  Meteor.methods
+    updateProfileImage: (image) ->
+      Meteor.users.update Meteor.userId(),
+        $set:
+          image: image
 
   publishCollection = (name, collection) ->
     Meteor.publish name, () ->
