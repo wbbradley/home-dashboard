@@ -163,12 +163,16 @@
 	box-sizing: border-box;	
 }
 
-.title-font (@size) {
+.unspaced-title-font (@size) {
 	font-family: @title-font;
 	font-weight: @title-font-weight;
 	font-size: @size;
-	letter-spacing: round(@size / 7);
 	text-transform: uppercase;
+}
+
+.title-font (@size) {
+	.unspaced-title-font(@size);
+	letter-spacing: round(@size / 7);
 }
 
 .body-font (@size) {
@@ -361,6 +365,7 @@ button {
 	cursor: pointer;
 	.media-control-min-height;
 	.media-button-font;
+	.unspaced-title-font(16px);
 	border: 0;
 	.standard-button-colors;
 	&:hover {
@@ -420,7 +425,7 @@ form {
 	float: left;
 }
 
-section {
+body > section {
 	background: @bright-white;
 	.media-max-width;
 	overflow: hidden;
@@ -430,6 +435,7 @@ section {
 			margin-left: 5px;
 			margin-top: 5px;
 			margin-bottom: 5px;
+
 			button {
 				float: right;
 				margin: 0 4px;
@@ -446,6 +452,7 @@ section {
 			}
 		}
 	}
+
 	&#messages {
 		nav {
 			&>button {
@@ -640,7 +647,7 @@ a.assign {
 .meme {
 	.title, .subtitle {
 		width: 100%;
-		font-family: Impact, 'AvenirNext-Heavy', Charcoal, sans-serif;
+		font-family: Impact, Charcoal, sans-serif;
 		font-size: 50px;
 		font-weight: bolder;
 	}

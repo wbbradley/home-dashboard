@@ -125,8 +125,7 @@
 </template>
 
 <template name="memeDisplay">
-<div class="meme-container"
-	style="background-image: url({{{imageUrl}}})">
+<div class="meme-container" style="background-image: url({{{imageUrl}}})">
 	<div class="inner">
 		<div class="top">
 			<span class="title meme-text">{{{memeTitle}}}</span><br/>
@@ -142,7 +141,7 @@
 <div class="message">
 	<header>
 		{{#withAuthor authorId}}
-		<div class="author" title="{{name}}" style="background-image:url({{image}})"></div>
+		<div class="author" title="{{name}}" style="-background-image:url({{image}})"></div>
 		<span class="name">{{name}}</span>
 		{{/withAuthor}}
 		{{link-render}}
@@ -180,10 +179,19 @@
 			<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
 		{{/if}}
 	{{/if}}
-	<div>
+	<div class="comments">
 		{{#loveLoop this}}
 			<i class="icon-heart"></i>
-		{{/loveLoop}}
+			{{/loveLoop}}
+		{{#if comments}}
+			<h3>Comments</h3>
+			{{#each comments}}
+			{{/each}}
+		{{/if}}
+		<form onsubmit="event.preventDefault();">
+			<button class="comment-btn"><i class="icon-comment"></i></button>
+			<input type="text" name="comment">
+		</form>
 	</div>
 	{{#each comments}}
 	<div class="comment">

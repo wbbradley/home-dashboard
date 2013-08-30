@@ -159,6 +159,13 @@ if Meteor.isClient
     messagesReady: ->
       subscriptions.messages.ready()
 
+  addComment = (_id) ->
+    # Messages.update {_id: _id},
+    #   $set:
+    #     meme: true
+    #     memeTitle: 'title'
+    #     memeSubtitle: 'subtitle'
+
   Template.body.helpers
     background: ->
       @getGlobal('background') or ''
@@ -207,6 +214,8 @@ if Meteor.isClient
       captureAndSendComment @, event.target
     'click .meme-btn': () ->
       makeMeme @_id
+    'click .comment-btn': () ->
+      addComment @_id
     'click .love-btn': () ->
       if Meteor.user()?._id?
         log 'info', "#{Meteor.user().profile.name} liked a post"
@@ -721,6 +730,7 @@ if Meteor.isServer
 @WeatherReports = WeatherReports
 @formatDate = formatDate
 @makeMeme = makeMeme
+@addComment = addComment
 @dumpColl = dumpColl
 @userEmailAddress = userEmailAddress
 @showNewerMessages = showNewerMessages
