@@ -670,6 +670,12 @@ if Meteor.isServer
     update: () ->
       return true
 
+  Meteor.methods
+    updateProfileImage: (image) ->
+      Meteor.users.update Meteor.userId(),
+        $set:
+          image: image
+
   publishCollection = (name, collection) ->
     Meteor.publish name, () ->
       user = Meteor.users.findOne @userId
