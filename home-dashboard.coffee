@@ -199,6 +199,10 @@ if Meteor.isClient
     author = Meteor.users.findOne {_id:authorId}
     return author.profile.name or 'Unknown'
 
+  @isAdminUser = (userId) ->
+    user = Meteor.users.findOne {_id:userId}
+    user.isAdmin
+
   Template.message.helpers
     withAuthor: (userId, options) ->
       author = Meteor.users.findOne {_id: userId}, {sort: {timestamp: -1}}
@@ -213,7 +217,8 @@ if Meteor.isClient
       else
         return options.inverse @
     ifOwner: (context, options) ->
-      if Meteor.user()?._id is @authorId
+      userId = Meteor.user()?._id
+      if userId is @authorId or isAdminUser userId
         return options.fn @
       else
         return options.inverse @
@@ -528,6 +533,14 @@ if Meteor.isServer
 
   endsWith = (string, suffix) ->
       string.indexOf(suffix, string.length - suffix.length) isnt -1
+
+  if Meteor.settings.private?.admins?.indexOf?
+    Meteor.users.find().forEach (user) ->
+      email = userEmailAddress user
+      index = Meteor.settings.private.admins.indexOf email
+      isAdmin = index isnt -1
+      console.log "home-dashboard : info : setting '#{user.profile.name} (#{email})' isAdmin to #{isAdmin}"
+      Meteor.users.update {_id: user._id}, $set: isAdmin: index isnt -1
 
   validUserByEmail = (user) ->
     settings = Meteor.settings.private
