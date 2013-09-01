@@ -1,0 +1,15 @@
+{
+  "Statement": [
+    {
+     "Sid": "Stmt1364925271144",
+     "Action": [
+        "s3:Put*",
+        "s3:Get*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:s3:::your-s3-bucket-name/*"
+      ]
+    }
+  ]
+}

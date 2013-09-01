@@ -1,16 +1,7 @@
 <head>
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
-	<script>
-		function redisplayDiffTimes() {
-			$('span[data-time]').each(function (index, value) {
-				this.innerText = formatDate(parseInt(value.getAttribute('data-time')));
-			});
-		}
-		$(function () {
-			window.setInterval(redisplayDiffTimes, 10000);
-		});
-	</script>
+	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
 </head>
 
 <body>
@@ -32,6 +23,7 @@
 	</header>
 	{{#if messages_ready}}
 	<section id="send-message">
+		<button onclick="javascript:pickFile()">Pick a file</button>
 		{{> send-message}}
 	</section>
 		{{> messages}}
@@ -66,7 +58,7 @@
 
 <template name="currentUserImage">
 {{#if currentUser}}
-	<div class="author" style="background-image:url({{imageUrl}})"></div>
+	<div class="author" style="background-image:url({{{imageUrl}}})"></div>
 {{/if}}
 </template>
 
@@ -102,7 +94,7 @@
 </template>
 
 <template name="memificator">
-<div class="meme-container" style="background-image: url({{imageUrl}})">
+<div class="meme-container" style="background-image: url({{{imageUrl}}})">
 	<div class="inner">
 		<div class="top">
 			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{{memeTitle}}}</span><br/>
@@ -116,7 +108,7 @@
 
 <template name="memeDisplay">
 <div class="meme-container"
-	style="background-image: url({{imageUrl}})">
+	style="background-image: url({{{imageUrl}}})">
 	<div class="inner">
 		<div class="top">
 			<span class="title meme-text">{{{memeTitle}}}</span><br/>
@@ -145,6 +137,7 @@
 					</button>
 					{{/if}}
 				{{/if}}
+				<button class="delete-btn"><i class="icon-trash"></i></button>
 			{{else}}
 				{{#ifNotLoved this}}
 					<button class="love-btn"><i class="icon-heart"></i></button>
@@ -163,7 +156,7 @@
 			<p>{{say msg}}<p>
 		{{/if}}
 		{{#if imageUrl}}
-			<img src="{{imageUrl}}" />
+			<img src="{{{imageUrl}}}" />
 		{{/if}}
 		{{#if youtube}}
 			<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>

@@ -78,6 +78,15 @@ if Meteor.isClient
   Meteor.settings.public = _.defaults Meteor.settings.public or {}, default_settings.public
   Session.set 'pageSize', Meteor.settings.public.pageSize
   Session.set 'skipAhead', 0
+  $ ->
+    console.log "Setting up filepicker.io..."
+    if filepicker?.setKey? and Meteor.settings.public.filepicker?.key?
+      console.log "Setting filepicker.io key to #{Meteor.settings.public.filepicker.key}"
+      filepicker.setKey Meteor.settings.public.filepicker.key
+
+  @pickFile = () ->
+    filepicker.pick (InkBlob) ->
+      addImageByUrl "#{InkBlob.url}/convert?w=640&h=640&fit=crop&format=jpg&quality=95"
 
   document.title = Meteor.settings.public.title
   dumpColl = (coll) ->
@@ -387,6 +396,14 @@ if Meteor.isClient
         roomId: room._id
         creatorId: Meteor.user()._id
         holderId: null
+  @addImageByUrl = (imageUrl) ->
+    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+    if imageUrl
+      Messages.insert
+        imageUrl: imageUrl
+        timestamp: Date.now()
+        authorId: Meteor.user()._id
+        roomId: currentRoom._id
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -414,11 +431,7 @@ if Meteor.isClient
 
         imageIndex = msg.indexOf('/image ')
         if imageIndex >= 0
-          Messages.insert
-            imageUrl: msg.substr(imageIndex + 7)
-            timestamp: Date.now()
-            authorId: Meteor.user()._id
-            roomId: currentRoom._id
+          addImageByUrl(msg.substr(imageIndex + 7))
 
         memeIndex = msg.indexOf('/meme ')
         if memeIndex >= 0
