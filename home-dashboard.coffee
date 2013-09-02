@@ -78,11 +78,6 @@ if Meteor.isClient
   Meteor.settings.public = _.defaults Meteor.settings.public or {}, default_settings.public
   Session.set 'pageSize', Meteor.settings.public.pageSize
   Session.set 'skipAhead', 0
-  $ ->
-    console.log "Setting up filepicker.io..."
-    if filepicker?.setKey? and Meteor.settings.public.filepicker?.key?
-      console.log "Setting filepicker.io key to #{Meteor.settings.public.filepicker.key}"
-      filepicker.setKey Meteor.settings.public.filepicker.key
 
   @pickFile = () ->
     filepicker.pick (InkBlob) ->
@@ -149,6 +144,8 @@ if Meteor.isClient
       (@getGlobal 'background') or ''
     messages_ready: ->
       subscriptions.messages.ready()
+    filepickerEnabled: ->
+      return Boolean(getGlobal 'filepickerApiKey')
 
   Template.message.helpers
     'date-render': (timestamp) ->
@@ -246,22 +243,23 @@ if Meteor.isClient
 
   Template.messages.helpers
     eachItem: (context, options) ->
-      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
-      if not currentRoom?._id?
-        return options.inverse @
-      items = Items.find {roomId: currentRoom._id}, {sort: {timestamp: 1}}
+      currentRoom = currentRoom()
+      if currentRoom?._id
+        items = Items.find {roomId: currentRoom._id}, {sort: {timestamp: 1}}
 
-      if items.count()
-        ret = "Items in this room: ["
-        sep = ""
-        items.forEach (item) ->
-          ret += sep
-          ret += options.fn item
-          sep = " | "
-        ret += ']'
+        if items.count()
+          ret = "Items in this room: ["
+          sep = ""
+          items.forEach (item) ->
+            ret += sep
+            ret += options.fn item
+            sep = " | "
+          ret += ']'
+        else
+          ret = options.inverse @
+        return ret
       else
-        ret = options.inverse @
-      return ret
+        return options.inverse @
 
   Template.messages.roomName = ->
     room = Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -381,9 +379,11 @@ if Meteor.isClient
     else
       window.alert "There is no such thing as the #{item.name}. Are you not familiar with /place?"
       
+  @currentRoom = () ->
+    Rooms.findOne {}, {sort: {timestamp: -1}}
 
   @placeItem = (itemName, room) ->
-    room or= Rooms.findOne {}, {sort: {timestamp: -1}}
+    room or= currentRoom()
     item = findItem itemName
     if item
       if item.holderId is Meteor.user()._id
@@ -401,14 +401,33 @@ if Meteor.isClient
         roomId: room._id
         creatorId: Meteor.user()._id
         holderId: null
+
   @addImageByUrl = (imageUrl) ->
-    currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
     if imageUrl
       Messages.insert
         imageUrl: imageUrl
         timestamp: Date.now()
         authorId: Meteor.user()._id
-        roomId: currentRoom._id
+        roomId: currentRoom()._id
+
+  @addMemeByUrl = (imageUrl) ->
+    if imageUrl
+      Messages.insert
+        imageUrl: imageUrl
+        timestamp: Date.now()
+        authorId: Meteor.user()._id
+        roomId: currentRoom()._id
+        meme: true
+        memeTitle: 'title'
+        memeSubtitle: 'subtitle'
+
+  @addYouTubePlaylist = (youtube) ->
+    if youtube
+      Messages.insert
+        youtube: encodeURIComponent youtube
+        timestamp: Date.now()
+        authorId: Meteor.user()._id
+        roomId: currentRoom()._id
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -416,52 +435,27 @@ if Meteor.isClient
     if msg
       log 'info', msg
 
-      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+      cmdTable =
+        room: switchToRoom
+        place: placeItem
+        take: takeItem
+        image: addImageByUrl
+        meme: addMemeByUrl
+        youtube: addYouTubePlaylist
 
-      if msg[0] is '/'
-        roomIndex = msg.indexOf('/room ')
-        if roomIndex >= 0
-          roomName = msg.substr(roomIndex + 6)
-          switchToRoom roomName
-
-        placeItemIndex = msg.indexOf('/place ')
-        if placeItemIndex >= 0
-          placeItemName = msg.substr(placeItemIndex + 7)
-          placeItem placeItemName, currentRoom
-
-        takeItemIndex = msg.indexOf('/take ')
-        if takeItemIndex >= 0
-          takeItemName = msg.substr(takeItemIndex + 6)
-          takeItem takeItemName, currentRoom
-
-        imageIndex = msg.indexOf('/image ')
-        if imageIndex >= 0
-          addImageByUrl(msg.substr(imageIndex + 7))
-
-        memeIndex = msg.indexOf('/meme ')
-        if memeIndex >= 0
-          Messages.insert
-            imageUrl: msg.substr(memeIndex + 6)
-            timestamp: Date.now()
-            authorId: Meteor.user()._id
-            roomId: currentRoom._id
-            meme: true
-            memeTitle: 'title'
-            memeSubtitle: 'subtitle'
-
-        youtubeIndex = msg.indexOf('/youtube ')
-        if youtubeIndex >= 0
-          Messages.insert
-            youtube: encodeURIComponent(msg.substr(youtubeIndex + 9))
-            timestamp: Date.now()
-            authorId: Meteor.user()._id
-            roomId: currentRoom._id
+      re = /^\/([^ ]+) (.*)$/
+      match = re.exec msg
+      if match
+        cmd = match[1]
+        arg = match[2]
+        if cmd of cmdTable
+          cmdTable[cmd] arg
       else
         Messages.insert
           msg: msg
           timestamp: Date.now()
           authorId: Meteor.user()._id
-          roomId: currentRoom._id
+          roomId: currentRoom()._id
 
   Template['send-message'].events
     'keypress input[name="new-message"]': (event) ->

@@ -2,6 +2,16 @@
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
 	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
+	<script>
+		console.log("Meteor settings in script tag in head are:");
+		console.log(Meteor.settings);
+		console.log("Setting up filepicker.io...");
+		if (((typeof filepicker !== "undefined" && filepicker !== null ? filepicker.setKey : void 0) != null) && (((_ref = Meteor.settings["public"].filepicker) != null ? _ref.key : void 0) != null)) {
+			console.log("Setting filepicker.io key to " + Meteor.settings["public"].filepicker.key);
+			filepicker.setKey(Meteor.settings["public"].filepicker.key);
+			upsertGlobal('filepickerApiKey', Meteor.settings["public"].filepicker.key);
+		}
+	</script>
 </head>
 
 <body>
@@ -23,7 +33,9 @@
 	</header>
 	{{#if messages_ready}}
 	<section id="send-message">
-		<button onclick="javascript:pickFile()">Pick a file</button>
+		{{#if filepickerEnabled}}
+			<button onclick="javascript:pickFile()">Pick a file</button>
+		{{/if}}
 		{{> send-message}}
 	</section>
 		{{> messages}}

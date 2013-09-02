@@ -2,7 +2,6 @@
 
 @sans-serif: 'Oxygen', 'Open Sans', 'Helvetica', 'Arial', sans-serif;
 
-@mobile-header-image-margin: 3px;
 @title-font: @sans-serif;
 @title-font-weight: 300;
 @title-font-color: #3f5765;
@@ -22,29 +21,124 @@
 @light-text-col: #f0f0f0;
 @light-title-font-col: #ccc;
 @dark-text-color: #333;
-
 @button-col: #ff9800;
-@mobile-width: 320px;
-@mobile-padding: round(@mobile-width / 32);
-@mobile-author-size: round(@mobile-width / 12);
-@iphone: ~'(max-width:@mobile-width)';
-@not-iphone: ~'(min-width:(@mobile-width + 1px))';
 
-@icon-width: 60px;
-@icon-height: @icon-width;
+@largest-device-width: 768px;
+@largest-device-header-image-margin: 6px;
+@largest-device-padding: round(@largest-device-width / 32);
+@largest-device-author-size: round(@largest-device-width / 12);
+@largest-device-control-height: 30px;
 
-@font-face {
-  font-family: 'Oxygen';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Oxygen Light'), local('Oxygen-Light'), url(http://themes.googleusercontent.com/static/fonts/oxygen/v2/AwBqWF2kjhlybWamaKMPcaCWcynf_cDxXwCLxiixG1c.ttf) format('truetype');
+@iphone-width: 320px;
+@iphone-header-image-margin: 3px;
+@iphone-padding: round(@iphone-width / 32);
+@iphone-author-size: round(@iphone-width / 12);
+@iphone-control-height: 20px;
+
+@iphone: ~'(max-width:768px)';
+@not-iphone: ~'(min-width:769px)';
+
+.media-width-height-square {
+	@media @not-iphone {
+		max-width: @largest-device-width;
+		max-height: @largest-device-width;
+		width: @largest-device-width;
+		height: @largest-device-width;
+	}
+	@media @iphone {
+		max-width: @iphone-width;
+		max-height: @iphone-width;
+		width: @iphone-width;
+		height: @iphone-width;
+	}
+}
+
+.media-header-margin {
+	@media @not-iphone {
+		margin: @largest-device-header-image-margin;
+	}
+	@media @iphone {
+		margin: @iphone-header-image-margin;
+	}
+}
+
+.media-message-header-margin {
+	@media @not-iphone {
+		margin: 20px 0 0 0;
+	}
+	@media @iphone {
+		margin: 10px 0 0 0;
+	}
+}
+
+.media-max-width {
+	@media @not-iphone {
+		max-width: @largest-device-width;
+	}
+	@media @iphone {
+		max-width: @iphone-width;
+	}
+}
+
+.media-padding {
+	@media @not-iphone {
+		padding: @largest-device-padding;
+	}
+	@media @iphone {
+		padding: @iphone-padding;
+	}
+}
+
+.media-author-size {
+	@media @not-iphone {
+		width: @largest-device-author-size;
+		height: @largest-device-author-size;
+	}
+	@media @iphone {
+		width: @iphone-author-size;
+		height: @iphone-author-size;
+	}
+}
+
+.media-body-font {
+	@media @not-iphone {
+		.body-font(16px);
+	}
+	@media @iphone {
+		.body-font(14px);
+	}
+}
+
+.media-control-min-height {
+	@media @not-iphone {
+		min-height: @largest-device-control-height;
+	}
+	@media @iphone {
+		min-height: @iphone-control-height;
+	}
+}
+
+.media-button-font {
+	@media @not-iphone {
+		.title-font(20px);
+	}
+	@media @iphone {
+		.title-font(16px);
+	}
 }
 
 @font-face {
-  font-family: 'Cutive';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Cutive'), local('Cutive-Regular'), url(http://themes.googleusercontent.com/static/fonts/cutive/v4/6dUc_M1PDZZCBfdFvQn4lQ.ttf) format('truetype');
+	font-family: 'Oxygen';
+	font-style: normal;
+	font-weight: 300;
+	src: local('Oxygen Light'), local('Oxygen-Light'), url(http://themes.googleusercontent.com/static/fonts/oxygen/v2/AwBqWF2kjhlybWamaKMPcaCWcynf_cDxXwCLxiixG1c.ttf) format('truetype');
+}
+
+@font-face {
+	font-family: 'Cutive';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Cutive'), local('Cutive-Regular'), url(http://themes.googleusercontent.com/static/fonts/cutive/v4/6dUc_M1PDZZCBfdFvQn4lQ.ttf) format('truetype');
 }
 
 .box () {
@@ -60,32 +154,25 @@
 	text-transform: uppercase;
 }
 
-.body-font (@size: 14px) {
+.body-font (@size) {
 	font-family: @body-font;
 	font-weight: @body-font-weight;
 	font-size: @size;
 	color: @body-font-color;
 }
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
-blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img,
-ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i,
-center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption,
-tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section,
-summary, time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
 }
 
 body {
 	line-height: 1.6;
-	font-size: 14px;
-	.body-font;
+	.media-body-font;
 	.box;
 }
 
@@ -93,39 +180,38 @@ strong {
 	font-weight: 700;
 }
 ol, ul {
-  list-style: none;
+	list-style: none;
 }
 
 table {
-  border-collapse: collapse;
-  border-spacing: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
 }
 
 caption, th, td {
-  text-align: left;
-  font-weight: normal;
-  vertical-align: middle;
+	text-align: left;
+	font-weight: normal;
+	vertical-align: middle;
 }
 
 q, blockquote {
-  quotes: none;
+	quotes: none;
 }
 
 q:before,
 q:after,
 blockquote:before,
 blockquote:after {
-  content: "";
-  content: none;
+	content: "";
+	content: none;
 }
 
 a img {
-  border: none;
+	border: none;
 }
 
-article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav,
-section, summary {
-  display: block;
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary {
+	display: block;
 }
 
 @-webkit-viewport{width:device-width}
@@ -135,12 +221,12 @@ section, summary {
 @viewport{width:device-width}
 
 html {
-  overflow-y: auto;
+	overflow-y: auto;
 }
 
 img, video {
-  max-width: 100%;
-  height: auto;
+	max-width: 100%;
+	height: auto;
 }
 
 .relative {
@@ -183,26 +269,34 @@ body, html {
 	}
 }
 
-.debug {
-	font-family: Helvetica, Arial, sans-serif;
-	font-size: 10px;
-	word-break: break-word;
-	padding: 5px;
-}
-
 h1 {
-	.title-font(24px);
+	@media @not-iphone {
+		.title-font(38px);
+	}
+	@media @iphone {
+		.title-font(24px);
+	}
 }
 h2 {
-	.title-font(20px);
+	@media @not-iphone {
+		.title-font(30px);
+	}
+	@media @iphone {
+		.title-font(20px);
+	}
 }
 h3 {
-	.title-font(18px);
+	@media @not-iphone {
+		.title-font(26px);
+	}
+	@media @iphone {
+		.title-font(18px);
+	}
 }	
 
 body > header {
 	.box;
-	padding: @mobile-padding;
+	.media-padding;
 	background-color: darkgray;
 	background-size: cover; 
 	position: relative;
@@ -224,7 +318,6 @@ body > header {
 	.box;
 }
 
-@control-height: 20px;
 @button-hover-col: #3f5765;
 
 button {
@@ -232,8 +325,8 @@ button {
 	display: block;
 	height: 1.5em;
 	cursor: pointer;
-	min-height: @control-height;
-	.title-font(16px);
+	.media-control-min-height;
+	.media-button-font;
 	color: white;
 	border: 0;
 	background-color: @button-col;
@@ -245,8 +338,9 @@ button {
 input {
 	border-radius: 0;
 	display: inline-block;
-	min-height: @control-height;
+	.media-control-min-height;
 	height: auto;
+	.media-body-font;
 }
 
 form {
@@ -276,7 +370,7 @@ form {
 
 section {
 	background: @bright-white;
-	max-width: @mobile-width;
+	.media-max-width;
 	overflow: hidden;
 
 	&#send-message {
@@ -310,29 +404,34 @@ section {
 	.author {
 		float: left;
 		display: inline-block;
-		margin: @mobile-header-image-margin;
+		.media-header-margin;
 		.image;
-		width: @mobile-author-size;
-		height: @mobile-author-size;
+		.media-author-size;
 		z-index: 10;
 	}
 }
 
 .message {
+	clear: both;
 	header {
-		margin: 10px 0 0 0;
+		.media-message-header-margin;
 		button {
 			padding: 0;
 			display: inline-block;
 		}
 		nav {
 			float: right;
-			padding-top: @mobile-header-image-margin;
-			padding-right: @mobile-header-image-margin;
+			@media @not-iphone {
+				padding-top: @largest-device-header-image-margin;
+				padding-right: @largest-device-header-image-margin;
+			}
+			@media @iphone {
+				padding-top: @iphone-header-image-margin;
+				padding-right: @iphone-header-image-margin;
+			}
 			z-index: 11;
 			button {
-				width: @mobile-author-size;
-				height: @mobile-author-size;
+				.media-author-size;
 			}
 		}
 	}
@@ -346,8 +445,14 @@ section {
 		font-family: @sans-serif;
 	}
 	img {
-		max-width: @mobile-width;
-		width: @mobile-width;
+		@media @not-iphone {
+			max-width: @largest-device-width;
+			width: @largest-device-width;
+		}
+		@media @iphone {
+			max-width: @iphone-width;
+			width: @iphone-width;
+		}
 		height: auto;
 	}
 
@@ -358,10 +463,15 @@ section {
 		clear: both;
 		button {
 			float: right;
-			margin: @mobile-header-image-margin;
+			.media-header-margin;
 		}
 		input {
-			width: 190px;
+			@media @not-iphone {
+				width: 600px;
+			}
+			@media @iphone {
+				width: 190px;
+			}
 		}
 		div& {
 			.name {
@@ -392,26 +502,28 @@ a.assign {
 
 .text-stroke(@stroke-width; @color) {
 	//-webkit-text-stroke: @stroke-width @color;
-    text-shadow: @stroke-width @stroke-width 0 @color,
-   		-@stroke-width -@stroke-width 0 @color,
-		@stroke-width -@stroke-width 0 @color,
-		-@stroke-width @stroke-width 0 @color,
-		0 @stroke-width 0 @color,
-		@stroke-width 0 0 @color,
-		0 -@stroke-width 0 @color,
-		-@stroke-width 0 0 @color;
+	text-shadow: @stroke-width @stroke-width 0 @color,
+	-@stroke-width -@stroke-width 0 @color,
+	@stroke-width -@stroke-width 0 @color,
+	-@stroke-width @stroke-width 0 @color,
+	0 @stroke-width 0 @color,
+	@stroke-width 0 0 @color,
+	0 -@stroke-width 0 @color,
+	-@stroke-width 0 0 @color;
 }
 
 .meme-container {
 	overflow: hidden;
 	.box;
 	.image;
-	max-width: @mobile-width;
-	max-height: @mobile-width;
-	width: @mobile-width;
-	height: @mobile-width;
+	.media-width-height-square;
 	padding: 0;
-	border: round(@mobile-width / 100) solid black;
+	@media @not-iphone {
+		border: round(@largest-device-width / 100) solid black;
+	}
+	@media @iphone {
+		border: round(@largest-device-width / 100) solid black;
+	}
 	text-align: center;
 	white-space: nowrap;
 	color: white;

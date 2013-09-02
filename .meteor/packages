@@ -16,3 +16,6 @@ facebook
 accounts-twitter
 accounts-ui
 font-awesome
+standard-app-packages
+page-js-ie-support
+router
