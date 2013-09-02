@@ -6,6 +6,7 @@
       twitter: ['wbbradley']
   public:
     title: "Home Dashboard"
+    server: "http://localhost:3000/"
     karma: true
     pageSize: 10
 
@@ -13,6 +14,7 @@ log = (level, msg) ->
   if typeof console != 'undefined'
     console.log "home-dashboard : #{level} : #{msg}"
 
+Invites = new Meteor.Collection 'invites'
 Messages = new Meteor.Collection 'messages'
 Comments = new Meteor.Collection 'comments'
 Rooms = new Meteor.Collection 'rooms'
@@ -76,8 +78,16 @@ userEmailAddress = (user) ->
 if Meteor.isClient
   Meteor.settings = Meteor.settings or {}
   Meteor.settings.public = _.defaults Meteor.settings.public or {}, default_settings.public
+
+  @goToFirstPage = ->
+      Session.set 'skipAhead', 0
+
+  @currentRoom = () ->
+    Rooms.findOne {}, {sort: {timestamp: -1}}
+
   Session.set 'pageSize', Meteor.settings.public.pageSize
-  Session.set 'skipAhead', 0
+
+  goToFirstPage()
 
   @pickFile = () ->
     filepicker.pick (InkBlob) ->
@@ -139,13 +149,15 @@ if Meteor.isClient
         memeTitle: 'title'
         memeSubtitle: 'subtitle'
 
+  Template.header.helpers
+    messagesReady: ->
+      subscriptions.messages.ready()
+
   Template.body.helpers
     background: ->
-      (@getGlobal 'background') or ''
-    messages_ready: ->
+      @getGlobal('background') or ''
+    messagesReady: ->
       subscriptions.messages.ready()
-    filepickerEnabled: ->
-      return Boolean(getGlobal 'filepickerApiKey')
 
   Template.message.helpers
     'date-render': (timestamp) ->
@@ -359,8 +371,7 @@ if Meteor.isClient
         timestamp: Date.now()
 
   @takeItem = (itemName, currentRoom) ->
-    if not currentRoom
-      currentRoom = Rooms.findOne {}, {sort: {timestamp: -1}}
+    currentRoom or= currentRoom()
     item = findItem itemName
     if item
       if item.roomId is currentRoom._id
@@ -379,9 +390,6 @@ if Meteor.isClient
     else
       window.alert "There is no such thing as the #{item.name}. Are you not familiar with /place?"
       
-  @currentRoom = () ->
-    Rooms.findOne {}, {sort: {timestamp: -1}}
-
   @placeItem = (itemName, room) ->
     room or= currentRoom()
     item = findItem itemName
@@ -409,6 +417,7 @@ if Meteor.isClient
         timestamp: Date.now()
         authorId: Meteor.user()._id
         roomId: currentRoom()._id
+      goToFirstPage()
 
   @addMemeByUrl = (imageUrl) ->
     if imageUrl
@@ -420,6 +429,7 @@ if Meteor.isClient
         meme: true
         memeTitle: 'title'
         memeSubtitle: 'subtitle'
+      goToFirstPage()
 
   @addYouTubePlaylist = (youtube) ->
     if youtube
@@ -428,6 +438,10 @@ if Meteor.isClient
         timestamp: Date.now()
         authorId: Meteor.user()._id
         roomId: currentRoom()._id
+      goToFirstPage()
+
+  @inviteByEmail = (emailInvited) ->
+    Meteor.call 'inviteByEmail', emailInvited, Meteor.user()._id
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -442,6 +456,7 @@ if Meteor.isClient
         image: addImageByUrl
         meme: addMemeByUrl
         youtube: addYouTubePlaylist
+        invite: inviteByEmail
 
       re = /^\/([^ ]+) (.*)$/
       match = re.exec msg
@@ -456,6 +471,10 @@ if Meteor.isClient
           timestamp: Date.now()
           authorId: Meteor.user()._id
           roomId: currentRoom()._id
+        Session.set 'skipAhead', 0
+  Template['send-message'].helpers
+    filepickerEnabled: ->
+      return Boolean(getGlobal 'filepickerApiKey')
 
   Template['send-message'].events
     'keypress input[name="new-message"]': (event) ->
@@ -506,6 +525,26 @@ if Meteor.isServer
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
   Meteor.methods
+    inviteByEmail: (emailInvited, userId) ->
+      check [emailInvited, userId], [String]
+      user = Meteor.users.findOne userId
+      console.log "#{user.profile.name} is inviting #{emailInvited}"
+      invite = Invites.findOne {emailInvited: emailInvited}
+
+      if not invite
+        Invites.insert
+          emailInvited: emailInvited
+          fromUserId: userId
+        emailSender = userEmailAddress user or null
+        if emailSender
+          Email.send
+            to: emailInvited
+            from: emailSender
+            subject: "You've been invited to #{Meteor.settings.public.title}"
+            text: "Hello, #{user.profile.name} has invited you to check out #{Meteor.settings.public.server}"
+      else
+        console.log "Found an oustanding invite for #{emailInvited}"
+
     sendEmail: (to, from, subject, text) ->
       check([to, from, subject, text], [String])
 

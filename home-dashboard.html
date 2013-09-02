@@ -18,42 +18,46 @@
 	{{> body}}
 </body>
 
-<template name="body">
+<template name="header">
 	<header style="background-image: url({{background}})">
-		<h1>{{settings.title}} {{roomName}}</h1>
-		<div class="login-tools">
-			{{loginButtons}}
-		</div>
-		{{#if currentUser}}
-			{{#with karma}}
-				<span class="karma">You have {{ points }} heart point(s).</span>
-			{{/with}}
+		{{#if messagesReady}}
+			<section id="send-message">
+				{{> send-message}}
+			</section>
+		{{ else }}
+			<h1>{{settings.title}} {{roomName}}</h1>
+			<div class="login-tools">
+				{{loginButtons}}
+			</div>
+			{{#if currentUser}}
+				{{#with karma}}
+					<span class="karma">You have {{ points }} heart point(s).</span>
+				{{/with}}
+			{{/if}}
+			<div class="clearfix"></div>
 		{{/if}}
-		<div class="clearfix"></div>
 	</header>
-	{{#if messages_ready}}
-	<section id="send-message">
-		{{#if filepickerEnabled}}
-			<button onclick="javascript:pickFile()">Pick a file</button>
-		{{/if}}
-		{{> send-message}}
-	</section>
+</template>
+
+<template name="body">
+	{{> header}}
+	{{#if messagesReady}}
 		{{> messages}}
-{{else}}
-	{{#if loggingIn}}
-		{{#if currentUser}}
-			Logging in...
-		{{else}}
-			Please stand by and await further instructions.
-		{{/if}}
 	{{else}}
-		{{#if currentUser}}
-			<div class="loading">Loading messages...</div>
+		{{#if loggingIn}}
+			{{#if currentUser}}
+				Logging in...
+			{{else}}
+				Please stand by and await further instructions.
+			{{/if}}
 		{{else}}
-			You are not logged in.
+			{{#if currentUser}}
+				<div class="loading">Loading messages...</div>
+			{{else}}
+				You are not logged in.
+			{{/if}}
 		{{/if}}
 	{{/if}}
-{{/if}}
 	<section id="footer">
 		<img src="/fortress.png" width="64px">
 	</section>
@@ -101,6 +105,9 @@
 	<form onsubmit="event.preventDefault();">
 		<input type="text" style="width:50%" name="new-message"></input>
 		<button name="send">Send</button>
+		{{#if filepickerEnabled}}
+			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
+		{{/if}}
 	</form>
 {{/if}}
 </template>
@@ -188,7 +195,9 @@
 	{{/each}}
 	<nav class="comment">
 		{{> currentUserImage }}
-		<button class="comment-btn"><i class="icon-comment-alt"></i></button>
+		<nav>
+			<button class="comment-btn"><i class="icon-comment-alt"></i></button>
+		</nav>
 		<input type="text" name="text">
 	</nav>
 </div>

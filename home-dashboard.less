@@ -21,7 +21,11 @@
 @light-text-col: #f0f0f0;
 @light-title-font-col: #ccc;
 @dark-text-color: #333;
+@border-col: #e0e0e0;
 @button-col: #ff9800;
+@button-text-col: #f0f0ff;
+@primary-button-col: #44f044;
+@primary-button-text-col: #f0f0ff;
 
 @largest-device-width: 768px;
 @largest-device-header-image-margin: 6px;
@@ -33,7 +37,7 @@
 @iphone-header-image-margin: 3px;
 @iphone-padding: round(@iphone-width / 32);
 @iphone-author-size: round(@iphone-width / 12);
-@iphone-control-height: 20px;
+@iphone-control-height: 24px;
 
 @iphone: ~'(max-width:768px)';
 @not-iphone: ~'(min-width:769px)';
@@ -97,6 +101,17 @@
 	@media @iphone {
 		width: @iphone-author-size;
 		height: @iphone-author-size;
+	}
+}
+
+.media-small-author-size {
+	@media @not-iphone {
+		width: @largest-device-control-height;
+		height: @largest-device-control-height;
+	}
+	@media @iphone {
+		width: @iphone-control-height;
+		height: @iphone-control-height;
 	}
 }
 
@@ -320,6 +335,16 @@ body > header {
 
 @button-hover-col: #3f5765;
 
+.standard-button-colors () {
+	color: @button-text-col;
+	background-color: @button-col;
+}
+
+.primary-button-colors () {
+	color: @primary-button-text-col;
+	background-color: @primary-button-col;
+}
+
 button {
 	.box;
 	display: block;
@@ -327,20 +352,32 @@ button {
 	cursor: pointer;
 	.media-control-min-height;
 	.media-button-font;
-	color: white;
 	border: 0;
-	background-color: @button-col;
+	.standard-button-colors;
 	&:hover {
 		background-color: @button-hover-col;
 	}
+	vertical-align: bottom;
+	&#btn-file-picker {
+		@media @iphone {
+			margin: 4px 0;
+		}
+		.primary-button-colors;		
+	}
+	text-align: bottom;
 }
 
 input {
+	border: 1px solid @border-col;
 	border-radius: 0;
 	display: inline-block;
 	.media-control-min-height;
 	height: auto;
 	.media-body-font;
+	.box;
+	padding: 0;
+	margin: 0;
+	vertical-align: bottom;
 }
 
 form {
@@ -406,8 +443,21 @@ section {
 		display: inline-block;
 		.media-header-margin;
 		.image;
-		.media-author-size;
 		z-index: 10;
+	}
+}
+
+.has-large-author () {
+	.has-author;
+	.author {
+		.media-author-size;
+	}
+}
+
+.has-small-author () {
+	.has-author;
+	.author {
+		.media-small-author-size;
 	}
 }
 
@@ -440,7 +490,7 @@ section {
 	}
 	position: relative;
 	.box;
-	.has-author;
+	.has-large-author;
 	.name {
 		font-family: @sans-serif;
 	}
@@ -459,13 +509,17 @@ section {
 	.comment {
 		.box;
 		padding-left: 20px;
-		.has-author;
+		.has-small-author;
 		clear: both;
-		button {
+		nav {
 			float: right;
-			.media-header-margin;
+			text-align: right;
+			button {
+				.media-header-margin;
+			}
 		}
 		input {
+			.media-header-margin;
 			@media @not-iphone {
 				width: 600px;
 			}
