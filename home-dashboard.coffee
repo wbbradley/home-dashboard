@@ -524,6 +524,13 @@ if Meteor.isServer
   @throwPermissionDenied = ->
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
+  @addToEmailWhitelist = (email) ->
+    if _.indexOf(settings.whitelist.emails, email, true) is -1
+      console.log "Adding invited user '#{email}' to whitelist"
+      settings.whitelist.emails.push email
+      settings.whitelist.emails = ([].concat settings.whitelist.emails).sort()
+    console.log "New whitelist is [#{settings.whitelist.emails.join(', ')}]"
+
   Meteor.methods
     inviteByEmail: (emailInvited, userId) ->
       check [emailInvited, userId], [String]
@@ -542,6 +549,9 @@ if Meteor.isServer
             from: emailSender
             subject: "You've been invited to #{Meteor.settings.public.title}"
             text: "Hello, #{user.profile.name} has invited you to check out #{Meteor.settings.public.server}"
+        email = emailInvited
+        console.log "Processing invited user '#{email}'"
+        addToEmailWhitelist(emailInvited)
       else
         console.log "Found an oustanding invite for #{emailInvited}"
 
@@ -561,9 +571,14 @@ if Meteor.isServer
   Meteor.settings = _.defaults Meteor.settings, default_settings
   settings = Meteor.settings.private
 
-  for list_name of settings.whitelist
-    settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
+  @initWhitelist = ->
+    # Sort the whitelists
+    for list_name of settings.whitelist
+      settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
 
+    Invites.find().forEach (invite) ->
+      addToEmailWhitelist invite.emailInvited
+  initWhitelist()
   endsWith = (string, suffix) ->
       string.indexOf(suffix, string.length - suffix.length) isnt -1
 
