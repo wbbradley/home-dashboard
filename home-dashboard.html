@@ -145,8 +145,9 @@
 		<div class="author" title="{{name}}" style="background-image:url({{image}})"></div>
 		<span class="name">{{name}}</span>
 		{{/withAuthor}}
+		{{link-render}}
 		<nav>
-			{{#ifOwner this}}
+			{{#if ownerOrAdmin}}
 				{{#if imageUrl}}
 					{{#if meme}}
 					{{else}}
@@ -156,11 +157,10 @@
 					{{/if}}
 				{{/if}}
 				<button class="delete-btn"><i class="icon-trash"></i></button>
-			{{else}}
-				{{#ifNotLoved this}}
-					<button class="love-btn"><i class="icon-heart"></i></button>
-				{{/ifNotLoved}}
-			{{/ifOwner}}
+			{{/if}}
+			{{#if lovable}}
+				<button class="love-btn"><i class="icon-heart"></i></button>
+			{{/if}}
 		</nav>
 	</header>
 	{{#if meme}}

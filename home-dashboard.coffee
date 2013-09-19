@@ -1,3 +1,5 @@
+console.log "Starting home-dashboard..."
+
 @default_settings =
   private:
     domain: "gmail.com"
@@ -91,7 +93,9 @@ if Meteor.isClient
 
   @pickFile = () ->
     filepicker.pick (InkBlob) ->
-      addImageByUrl "#{InkBlob.url}/convert?w=640&h=640&fit=crop&format=jpg&quality=95"
+      switch InkBlob.mimetype
+        when 'image/gif' then addImageByUrl InkBlob.url
+        else addImageByUrl "#{InkBlob.url}/convert?w=640&h=640&fit=crop&format=jpg&quality=95"
 
   document.title = Meteor.settings.public.title
   dumpColl = (coll) ->
@@ -162,6 +166,15 @@ if Meteor.isClient
   Template.message.helpers
     'date-render': (timestamp) ->
       formatDate(timestamp)
+
+  Template.message.ownerOrAdmin = ->
+    userId = Meteor.user()?._id
+    return userId is @authorId or isAdminUser userId
+
+  Template.message.lovable = ->
+    userId = Meteor.user()?._id
+    userLoveIds = @userLoveIds or []
+    return @authorId isnt userId and userLoveIds.indexOf(userId) is -1
 
   Template.message.author = ->
     Meteor.users.findOne {_id:@authorId}
@@ -445,6 +458,10 @@ if Meteor.isClient
   @inviteByEmail = (emailInvited) ->
     Meteor.call 'inviteByEmail', emailInvited, Meteor.user()._id
 
+  @updateProfileImage = (imageUrl) ->
+    if /^http/.test imageUrl
+      Meteor.call 'updateProfileImage', imageUrl
+
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
     $('input[name="new-message"]').val('')
@@ -459,6 +476,7 @@ if Meteor.isClient
         meme: addMemeByUrl
         youtube: addYouTubePlaylist
         invite: inviteByEmail
+        face: updateProfileImage
 
       re = /^\/([^ ]+) (.*)$/
       match = re.exec msg
@@ -468,11 +486,17 @@ if Meteor.isClient
         if cmd of cmdTable
           cmdTable[cmd] arg
       else
-        Messages.insert
-          msg: msg
-          timestamp: Date.now()
-          authorId: Meteor.user()._id
-          roomId: currentRoom()._id
+        # handle lone image urls
+        reImage = /.*(http[s]?:\/\/.*(JPG|JPEG|GIF|PNG|jpg|jpeg|gif|png))(\s|$).*/
+        match = msg.match reImage
+        if match
+          addImageByUrl match[1]
+        else
+          Messages.insert
+            msg: msg
+            timestamp: Date.now()
+            authorId: Meteor.user()._id
+            roomId: currentRoom()._id
         Session.set 'skipAhead', 0
   Template['send-message'].helpers
     filepickerEnabled: ->
@@ -534,6 +558,10 @@ if Meteor.isServer
     console.log "New whitelist is [#{settings.whitelist.emails.join(', ')}]"
 
   Meteor.methods
+    updateProfileImage: (image) ->
+      Meteor.users.update Meteor.userId(),
+        $set:
+          image: image
     inviteByEmail: (emailInvited, userId) ->
       check [emailInvited, userId], [String]
       user = Meteor.users.findOne userId
@@ -612,12 +640,6 @@ if Meteor.isServer
   Meteor.users.deny
     update: () ->
       return true
-
-  Meteor.methods
-    updateProfileImage: (image) ->
-      Meteor.users.update Meteor.userId(),
-        $set:
-          image: image
 
   publishCollection = (name, collection) ->
     Meteor.publish name, () ->
