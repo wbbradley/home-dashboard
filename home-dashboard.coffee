@@ -337,7 +337,7 @@ if Meteor.isClient
 
   @balanceText = (event) ->
     $(event.target).parent().textfill
-      maxFontPixels: 80
+      maxFontPixels: 180
       maxWidth: $(event.target).parents('.meme-container').width() - 40
 
   @updateMeme = (_id) ->
@@ -355,7 +355,7 @@ if Meteor.isClient
     maxWidth = $firstNode.width() - 40
     $firstNode.find('.meme-text').each ->
       $(@).parent().textfill
-        maxFontPixels: 80
+        maxFontPixels: 180
         maxWidth: maxWidth
     return
 
