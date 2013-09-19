@@ -6,7 +6,7 @@
 @title-font-weight: 300;
 @title-font-color: #3f5765;
 
-@body-font: 'Cutive', sans-serif;
+@body-font: @sans-serif;
 @body-font-weight: 400;
 @body-font-color: #3f5765;
 
@@ -371,12 +371,17 @@ button {
 }
 
 input {
+	@media @not-iphone {
+		.body-font(16px);
+	}
+	@media @iphone {
+		.body-font(14px);
+	}
 	border: 1px solid @border-col;
 	border-radius: 0;
 	display: inline-block;
 	.media-control-min-height;
 	height: auto;
-	.media-body-font;
 	.box;
 	padding: 0;
 	margin: 0;

@@ -181,18 +181,28 @@ if Meteor.isClient
 
   Template.message.comments = ->
     Comments.find {msgId: @_id}, {sort: {timestamp: 1}}
+  
+  captureAndSendComment = (message, el) ->
+    $input = $(el).closest('nav.comment').find('input[type=text]')
+    text = $input.val()
+    $input.val('')
+    Comments.insert
+      text: text
+      msgId: message._id
+      authorId: Meteor.user()._id
+      timestamp: Date.now()
 
   Template.message.events
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
+    'keypress input[name="text"]': (event) ->
+      if event.which is 13
+        captureAndSendComment @, event.target
+        return false
+      return
     'click .comment-btn': () ->
-      text = $(event.target).closest('nav.comment').find('input[type=text]').val()
-      Comments.insert
-        text: text
-        msgId: @_id
-        authorId: Meteor.user()._id
-        timestamp: Date.now()
+      captureAndSendComment @, event.target
     'click .meme-btn': () ->
       makeMeme @_id
     'click .love-btn': () ->
