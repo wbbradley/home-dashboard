@@ -18,6 +18,7 @@ log = (level, msg) ->
 
 Invites = new Meteor.Collection 'invites'
 Messages = new Meteor.Collection 'messages'
+Beers = new Meteor.Collection 'beers'
 Comments = new Meteor.Collection 'comments'
 Rooms = new Meteor.Collection 'rooms'
 Items = new Meteor.Collection 'items'
@@ -27,6 +28,7 @@ Globals = new Meteor.Collection 'globals'
 subscribeList =
   'users': Meteor.users
   'messages': Messages
+  'beers': Beers
   'comments': Comments
   'rooms': Rooms
   'items': Items
@@ -444,6 +446,13 @@ if Meteor.isClient
         roomId: currentRoom()._id
       goToFirstPage()
 
+  @hadBeers = (count) ->
+    count = parseFloat(count)
+    if count > 0
+      Beers.insert
+        timestamp: Date.now()
+        userId: Meteor.user()._id
+
   @addMemeByUrl = (imageUrl) ->
     if imageUrl
       Messages.insert
@@ -487,6 +496,7 @@ if Meteor.isClient
         youtube: addYouTubePlaylist
         invite: inviteByEmail
         face: updateProfileImage
+        beers: hadBeers
 
       re = /^\/([^ ]+) (.*)$/
       match = re.exec msg
@@ -706,6 +716,7 @@ if Meteor.isServer
 @Rooms = Rooms
 @Items = Items
 @Messages = Messages
+@Beers = Beers
 @Globals = Globals
 @WeatherReports = WeatherReports
 @formatDate = formatDate

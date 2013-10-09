@@ -102,11 +102,11 @@
 <template name="send-message">
 {{#if currentUser}}
 	<form onsubmit="event.preventDefault();">
-		<input type="text" style="width:50%" name="new-message"></input>
-		<button name="send">Send</button>
+		<input type="text" name="new-message"></input>
 		{{#if filepickerEnabled}}
 			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
 		{{/if}}
+		<button name="send">Send</button>
 	</form>
 {{/if}}
 </template>

@@ -319,6 +319,10 @@ body > header {
 	background-size: cover; 
 	position: relative;
 	color: white;
+	max-width: 768px;
+	@media @iphone {
+		max-width: 320px;
+	}
 }
 
 .login-buttons {
@@ -362,6 +366,7 @@ button {
 	}
 	vertical-align: bottom;
 	&#btn-file-picker {
+		width: 144px;
 		@media @iphone {
 			margin: 4px 0;
 		}
@@ -423,6 +428,20 @@ section {
 			margin-left: 5px;
 			margin-top: 5px;
 			margin-bottom: 5px;
+			button {
+				float: right;
+				margin: 0 4px;
+				@media @iphone {
+					margin-bottom: 4px;
+				}
+			}
+			input {
+				width: 474px;
+				@media @iphone {
+					margin-bottom: 4px;
+					width: 310px;
+				}
+			}
 		}
 	}
 	&#messages {
