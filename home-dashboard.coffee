@@ -97,7 +97,7 @@ if Meteor.isClient
     filepicker.pick (InkBlob) ->
       switch InkBlob.mimetype
         when 'image/gif' then addImageByUrl InkBlob.url
-        else addImageByUrl "#{InkBlob.url}/convert?w=640&h=640&fit=crop&format=jpg&quality=95"
+        else addImageByUrl "#{InkBlob.url}/convert?w=640&fit=clip&format=jpg&quality=95"
 
   document.title = Meteor.settings.public.title
   dumpColl = (coll) ->
@@ -587,10 +587,6 @@ if Meteor.isServer
     console.log "New whitelist is [#{settings.whitelist.emails.join(', ')}]"
 
   Meteor.methods
-    updateProfileImage: (image) ->
-      Meteor.users.update Meteor.userId(),
-        $set:
-          image: image
     inviteByEmail: (emailInvited, userId) ->
       check [emailInvited, userId], [String]
       user = Meteor.users.findOne userId
