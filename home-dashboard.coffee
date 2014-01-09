@@ -702,23 +702,38 @@ if Meteor.isServer
   msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
   msgCursor.observe
     added: (doc) ->
-      console.dir doc
       creator = Meteor.users.findOne {_id:doc.authorId}
-      if false
-        Meteor.users.find().forEach (user) ->
-          email = userEmailAddress user
-          sender = adminEmail()
+      Meteor.users.find().forEach (user) ->
+        email = userEmailAddress user
+        sender = adminEmail()
+        Email.send
+          to: email
+          from: adminEmail()
+          subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
+          text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
+
+  commentCursor = Comments.find({timestamp: {$gt: Date.now()}})
+  commentCursor.observe
+    added: (comment) ->
+      console.dir comment
+      msg = Messages.findOne {_id:comment.msgId}
+      recipients = [msg.authorId]
+      Comments.find({msgId:msg._id}).forEach (earlierComment) ->
+        if earlierComment.authorId not in recipients
+          recipients.push earlierComment.authorId
+
+      originalAuthor = Meteor.users.findOne {_id:msg.authorId}
+      commentAuthor = Meteor.users.findOne {_id:comment.authorId}
+      sender = adminEmail()
+      for recipient in recipients
+        if comment.authorId isnt recipient
+          recipientUser = Meteor.users.findOne {_id:recipient}
+          email = userEmailAddress recipientUser
           Email.send
             to: email
             from: adminEmail()
-            subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
-            text: "Check it out at #{Meteor.settings.public.server}"
-      else
-        Email.send
-          to: adminEmail()
-          from: adminEmail()
-          subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
-          text: "Check it out at #{Meteor.settings.public.server}"
+            subject: "#{commentAuthor.profile.name} replied to a post you are in on #{Meteor.settings.public.title}"
+            text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
 
   Accounts.validateNewUser (user) ->
     if validUserByEmail user

@@ -138,7 +138,7 @@
 </template>
 
 <template name="message">
-<div class="message">
+<div class="message" id="message-{{_id}}">
 	<header>
 		{{#withAuthor authorId}}
 		<div class="author" title="{{name}}" style="background-image:url({{image}})"></div>
@@ -184,14 +184,9 @@
 			<i class="icon-heart"></i>
 			{{/loveLoop}}
 		{{#if comments}}
-			<h3>Comments</h3>
 			{{#each comments}}
 			{{/each}}
 		{{/if}}
-		<form onsubmit="event.preventDefault();">
-			<button class="comment-btn"><i class="icon-comment"></i></button>
-			<input type="text" name="comment">
-		</form>
 	</div>
 	{{#each comments}}
 	<div class="comment">
