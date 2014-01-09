@@ -629,6 +629,8 @@ if Meteor.isServer
   settings = Meteor.settings.private
 
   check [Meteor.settings.private.admins[0]], [String]
+  @adminEmail = ->
+    Meteor.settings.private.admins[0]
 
   @initWhitelist = ->
     # Sort the whitelists
@@ -700,16 +702,23 @@ if Meteor.isServer
   msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
   msgCursor.observe
     added: (doc) ->
-      Meteor.users.find().forEach (user) ->
-        email = userEmailAddress user
-        sender = adminEmail()
-        if email and email isnt sender
+      console.dir doc
+      creator = Meteor.users.findOne {_id:doc.authorId}
+      if false
+        Meteor.users.find().forEach (user) ->
+          email = userEmailAddress user
+          sender = adminEmail()
           Email.send
             to: email
             from: adminEmail()
-            subject: "#{user.profile.name} posted to #{Meteor.settings.public.title}"
+            subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
             text: "Check it out at #{Meteor.settings.public.server}"
-      console.dir doc
+      else
+        Email.send
+          to: adminEmail()
+          from: adminEmail()
+          subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
+          text: "Check it out at #{Meteor.settings.public.server}"
 
   Accounts.validateNewUser (user) ->
     if validUserByEmail user
