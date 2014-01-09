@@ -3,6 +3,9 @@ console.log "Starting home-dashboard..."
 @default_settings =
   private:
     domain: "gmail.com"
+    admins: [
+      'williambbradley@gmail.com'
+    ]
     whitelist:
       emails: []
       twitter: ['wbbradley']
@@ -575,7 +578,6 @@ if Meteor.isServer
     else
       return "boris is not here"
   """
-
   @throwPermissionDenied = ->
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
@@ -625,6 +627,8 @@ if Meteor.isServer
 
   Meteor.settings = _.defaults Meteor.settings, default_settings
   settings = Meteor.settings.private
+
+  check [Meteor.settings.private.admins[0]], [String]
 
   @initWhitelist = ->
     # Sort the whitelists
@@ -692,6 +696,20 @@ if Meteor.isServer
   for name, collection of subscribeList
     publishCollection name, collection
 
+  # Monitor for new messages and send appropriate emails
+  msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
+  msgCursor.observe
+    added: (doc) ->
+      Meteor.users.find().forEach (user) ->
+        email = userEmailAddress user
+        sender = adminEmail()
+        if email and email isnt sender
+          Email.send
+            to: email
+            from: adminEmail()
+            subject: "#{user.profile.name} posted to #{Meteor.settings.public.title}"
+            text: "Check it out at #{Meteor.settings.public.server}"
+      console.dir doc
 
   Accounts.validateNewUser (user) ->
     if validUserByEmail user
