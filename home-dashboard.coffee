@@ -701,8 +701,8 @@ if Meteor.isServer
   # Monitor for new messages and send appropriate emails
   msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
   msgCursor.observe
-    added: (doc) ->
-      creator = Meteor.users.findOne {_id:doc.authorId}
+    added: (msg) ->
+      creator = Meteor.users.findOne {_id:msg.authorId}
       Meteor.users.find().forEach (user) ->
         email = userEmailAddress user
         sender = adminEmail()
