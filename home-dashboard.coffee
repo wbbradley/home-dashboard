@@ -3,6 +3,7 @@ console.log "Starting home-dashboard..."
 @default_settings =
   private:
     domain: "gmail.com"
+    sendBroadcastEmail: false
     admins: [
       'williambbradley@gmail.com'
     ]
@@ -582,11 +583,12 @@ if Meteor.isServer
     throw new Meteor.Error 403, "We're sorry, #{Meteor.settings.private?.domain or '<domain>'} is not open to the public. Please contact your host for an invitation."
 
   @addToEmailWhitelist = (email) ->
-    if _.indexOf(settings.whitelist.emails, email, true) is -1
+    privateSettings = Meteor.settings.private
+    if _.indexOf(privateSettings.whitelist.emails, email, true) is -1
       console.log "Adding invited user '#{email}' to whitelist"
-      settings.whitelist.emails.push email
-      settings.whitelist.emails = ([].concat settings.whitelist.emails).sort()
-    console.log "New whitelist is [#{settings.whitelist.emails.join(', ')}]"
+      privateSettings.whitelist.emails.push email
+      privateSettings.whitelist.emails = ([].concat privateSettings.whitelist.emails).sort()
+    console.log "New whitelist is [#{privateSettings.whitelist.emails.join(', ')}]"
 
   Meteor.methods
     inviteByEmail: (emailInvited, userId) ->
@@ -626,7 +628,6 @@ if Meteor.isServer
         text: text
 
   Meteor.settings = _.defaults Meteor.settings, default_settings
-  settings = Meteor.settings.private
 
   check [Meteor.settings.private.admins[0]], [String]
   @adminEmail = ->
@@ -634,7 +635,7 @@ if Meteor.isServer
 
   @initWhitelist = ->
     # Sort the whitelists
-    for list_name of settings.whitelist
+    for list_name of Meteor.settings.whitelist
       settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
 
     Invites.find().forEach (invite) ->
@@ -698,19 +699,20 @@ if Meteor.isServer
   for name, collection of subscribeList
     publishCollection name, collection
 
-  # Monitor for new messages and send appropriate emails
-  msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
-  msgCursor.observe
-    added: (msg) ->
-      creator = Meteor.users.findOne {_id:msg.authorId}
-      Meteor.users.find().forEach (user) ->
-        email = userEmailAddress user
-        sender = adminEmail()
-        Email.send
-          to: email
-          from: adminEmail()
-          subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
-          text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
+  if Meteor.settings.private.sendBroadcastEmail
+    # Monitor for new messages and send appropriate emails
+    msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
+    msgCursor.observe
+      added: (msg) ->
+        creator = Meteor.users.findOne {_id:msg.authorId}
+        Meteor.users.find().forEach (user) ->
+          email = userEmailAddress user
+          sender = adminEmail()
+          Email.send
+            to: email
+            from: adminEmail()
+            subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
+            text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
 
   commentCursor = Comments.find({timestamp: {$gt: Date.now()}})
   commentCursor.observe
