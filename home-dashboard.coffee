@@ -635,8 +635,8 @@ if Meteor.isServer
 
   @initWhitelist = ->
     # Sort the whitelists
-    for list_name of Meteor.settings.whitelist
-      settings.whitelist[list_name] = ([].concat settings.whitelist[list_name]).sort()
+    for list_name of Meteor.settings.private.whitelist
+      Meteor.settings.private.whitelist[list_name] = ([].concat Meteor.settings.private.whitelist[list_name]).sort()
 
     Invites.find().forEach (invite) ->
       addToEmailWhitelist invite.emailInvited
