@@ -466,6 +466,12 @@ if Meteor.isClient
         timestamp: Date.now()
         userId: Meteor.user()._id
 
+
+  @search = (search) ->
+    searchString = search
+    Meteor.call 'search', search, Meteor.user()._id, currentRoom()._id
+
+
   @addMemeByUrl = (imageUrl) ->
     if imageUrl
       Messages.insert
@@ -510,6 +516,7 @@ if Meteor.isClient
         invite: inviteByEmail
         face: updateProfileImage
         beers: hadBeers
+        search: search
 
       re = /^\/([^ ]+) (.*)$/
       match = re.exec msg
@@ -525,12 +532,10 @@ if Meteor.isClient
         if match
           addImageByUrl match[1]
         else
-          Messages.insert
-            msg: msg
-            timestamp: Date.now()
-            authorId: Meteor.user()._id
-            roomId: currentRoom()._id
+          cmdTable.search msg
+
         Session.set 'skipAhead', 0
+
   Template['send-message'].helpers
     filepickerEnabled: ->
       return Boolean(getGlobal 'filepickerApiKey')
@@ -591,6 +596,23 @@ if Meteor.isServer
     console.log "New whitelist is [#{privateSettings.whitelist.emails.join(', ')}]"
 
   Meteor.methods
+    search: (searchString, user_id, room_id) ->
+      Meteor.http.get "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=#{encodeURIComponent(searchString)}", (error, result) ->
+        results = (JSON.parse result.content).responseData.results
+        item = results[Math.floor(Math.random() * results.length)]
+        words = searchString.split ' '
+        half = Math.floor(words.length / 2)
+        title = words.slice(0, half).join(' ')
+        subTitle = words.slice(half).join(' ')
+        Messages.insert
+          imageUrl: item.unescapedUrl
+          timestamp: Date.now()
+          authorId: user_id
+          roomId: room_id
+          meme: true
+          memeTitle: title
+          memeSubtitle: subTitle
+
     inviteByEmail: (emailInvited, userId) ->
       check [emailInvited, userId], [String]
       user = Meteor.users.findOne userId
